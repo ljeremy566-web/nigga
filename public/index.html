@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Content Studio | Oracle & Roadmap 30 Días Instagram</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .glass-card {
+      background: rgba(17, 24, 39, 0.75);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-purple-500 selection:text-white">
+
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-slate-900/60 backdrop-blur-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-purple-500/25">
+          <i data-lucide="sparkles" class="w-5 h-5 text-white"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-lg leading-tight flex items-center gap-2">
+            AI Content Studio
+            <span class="text-xs px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 font-medium">Oráculo & 30 Días Instagram</span>
+          </h1>
+          <p class="text-xs text-slate-400">YouTube Data API v3 • Instagram Profile Intelligence • Gemini AI • Supabase</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 text-xs">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20 font-medium">
+          <span class="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span>
+          Oracle Cron: Día 1 / Mes
+        </span>
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">
+          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          YouTube API
+        </span>
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-medium">
+          <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
+          Supabase
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 space-y-8">
+
+    <!-- Oracle Autonomous Engine Box -->
+    <section class="glass-card p-6 rounded-2xl border-purple-500/40 shadow-xl shadow-purple-950/20 space-y-4">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-base font-bold text-white flex items-center gap-2">
+            <i data-lucide="cpu" class="w-5 h-5 text-purple-400"></i> Oráculo Autónomo de Tendencias (YouTube + Instagram)
+          </h2>
+          <p class="text-xs text-slate-400 mt-1">Rastrea videos virales en YouTube y patrones de una cuenta de Instagram para generar ideas completas cada mes con Gemini AI.</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="space-y-1">
+            <label class="text-[10px] uppercase font-bold text-slate-400">Nicho / Temática:</label>
+            <input type="text" id="nicheInput" value="Inteligencia Artificial y Productividad" class="bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 w-64 block">
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] uppercase font-bold text-slate-400">Cuenta de Instagram de Referencia:</label>
+            <input type="text" id="igAccountInput" value="@creatorshub" class="bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 w-48 block">
+          </div>
+          <div class="pt-5">
+            <button onclick="handleOracleRun()" id="btnOracle" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-xs font-bold text-white transition flex items-center gap-2 shadow-lg shadow-purple-600/30 whitespace-nowrap">
+              <i data-lucide="play" class="w-4 h-4"></i> Disparar Oráculo IA
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Oracle Status Banner -->
+      <div id="oracleReportBox" class="p-3.5 rounded-xl bg-purple-950/30 border border-purple-800/40 text-xs text-purple-200 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i>
+          <span id="oracleStatusText">Oráculo sincronizado. Cron autónomo programado para ejecutarse el día 1 de cada mes.</span>
+        </div>
+        <span id="oracleTimestamp" class="text-[11px] text-slate-400">Listo</span>
+      </div>
+    </section>
+
+    <!-- Hero / Stats Summary -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="glass-card p-5 rounded-2xl border-purple-500/20 relative overflow-hidden">
+        <div class="text-xs uppercase font-bold tracking-wider text-purple-400 mb-1">Total de Contenidos</div>
+        <div id="statTotal" class="text-3xl font-extrabold text-white">30 Días</div>
+        <div class="text-xs text-slate-400 mt-1">1 mes completo planificado</div>
+      </div>
+      <div class="glass-card p-5 rounded-2xl border-indigo-500/20 relative overflow-hidden">
+        <div class="text-xs uppercase font-bold tracking-wider text-indigo-400 mb-1">Formato Principal</div>
+        <div class="text-3xl font-extrabold text-white">Reels & Carruseles</div>
+        <div class="text-xs text-slate-400 mt-1">Ganchos de 0-3 segundos</div>
+      </div>
+      <div class="glass-card p-5 rounded-2xl border-emerald-500/20 relative overflow-hidden">
+        <div class="text-xs uppercase font-bold tracking-wider text-emerald-400 mb-1">Prompts de Imágenes</div>
+        <div class="text-3xl font-extrabold text-white">30 Generados</div>
+        <div class="text-xs text-slate-400 mt-1">Para Midjourney / DALL-E</div>
+      </div>
+      <div class="glass-card p-5 rounded-2xl border-amber-500/20 relative overflow-hidden">
+        <div class="text-xs uppercase font-bold tracking-wider text-amber-400 mb-1">Estrategia</div>
+        <div class="text-3xl font-extrabold text-white">4 Fases</div>
+        <div class="text-xs text-slate-400 mt-1">Atracción → Venta</div>
+      </div>
+    </section>
+
+    <!-- Strategy Phases Overview -->
+    <section class="glass-card p-6 rounded-2xl space-y-4">
+      <h3 class="font-bold text-base flex items-center gap-2 text-white">
+        <i data-lucide="layers" class="w-4 h-4 text-purple-400"></i> Arquitectura Estratégica del Mes
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
+        <div class="p-4 rounded-xl bg-purple-950/30 border border-purple-800/40 space-y-1.5">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-purple-300">Semana 1</span>
+            <span class="px-2 py-0.5 rounded text-[10px] bg-purple-500/20 text-purple-200">Atracción</span>
+          </div>
+          <p class="text-slate-400 leading-relaxed">Reels virales, mitos rotos y ganchos de alta retención para atraer tráfico frío.</p>
+        </div>
+        <div class="p-4 rounded-xl bg-indigo-950/30 border border-indigo-800/40 space-y-1.5">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-indigo-300">Semana 2</span>
+            <span class="px-2 py-0.5 rounded text-[10px] bg-indigo-500/20 text-indigo-200">Autoridad</span>
+          </div>
+          <p class="text-slate-400 leading-relaxed">Carruseles educativos profundos y micro-hacks que te posicionan como referente.</p>
+        </div>
+        <div class="p-4 rounded-xl bg-emerald-950/30 border border-emerald-800/40 space-y-1.5">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-emerald-300">Semana 3</span>
+            <span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-200">Comunidad</span>
+          </div>
+          <p class="text-slate-400 leading-relaxed">Historias de errores reales, Q&A interactivo y debates que generan conversaciones.</p>
+        </div>
+        <div class="p-4 rounded-xl bg-amber-950/30 border border-amber-800/40 space-y-1.5">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-amber-300">Semana 4</span>
+            <span class="px-2 py-0.5 rounded text-[10px] bg-amber-500/20 text-amber-200">Conversión</span>
+          </div>
+          <p class="text-slate-400 leading-relaxed">Roadmap definitivo y llamadas a la acción directas para mensajes y ventas.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filter and Action Bar -->
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="text-xs text-slate-400 font-semibold uppercase">Semanas:</span>
+        <button onclick="filterWeek('all')" id="btn-all" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-purple-600 text-white">Todas</button>
+        <button onclick="filterWeek(1)" id="btn-1" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">Semana 1</button>
+        <button onclick="filterWeek(2)" id="btn-2" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">Semana 2</button>
+        <button onclick="filterWeek(3)" id="btn-3" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">Semana 3</button>
+        <button onclick="filterWeek(4)" id="btn-4" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">Semana 4</button>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button onclick="downloadCSV()" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 flex items-center gap-1.5 transition">
+          <i data-lucide="download" class="w-3.5 h-3.5"></i> CSV
+        </button>
+        <button onclick="downloadJSON()" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 flex items-center gap-1.5 transition">
+          <i data-lucide="file-json" class="w-3.5 h-3.5"></i> JSON
+        </button>
+      </div>
+    </div>
+
+    <!-- Cards Grid Container -->
+    <div id="cardsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <!-- Injected via JS -->
+    </div>
+  </main>
+
+  <!-- Modal Detail -->
+  <div id="modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+      <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span id="mDay" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">Día</span>
+          <span id="mFormat" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-indigo-500/20 text-indigo-300">Formato</span>
+          <span id="mPillar" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-800 text-slate-300">Pilar</span>
+        </div>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-5 text-sm">
+        <div>
+          <h4 id="mTitle" class="text-lg font-bold text-white mb-2"></h4>
+          <div class="bg-purple-950/40 border border-purple-800/40 rounded-xl p-3.5">
+            <span class="text-xs uppercase font-bold tracking-wider text-purple-400 block mb-1">🎯 Gancho (Hook):</span>
+            <p id="mHook" class="text-purple-200 font-medium"></p>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs uppercase font-bold tracking-wider text-slate-400">🎬 Guion Completo:</span>
+            <button onclick="copyToClipboard('mScript')" class="text-[11px] text-purple-400 hover:text-purple-300 flex items-center gap-1">
+              <i data-lucide="copy" class="w-3 h-3"></i> Copiar Guion
+            </button>
+          </div>
+          <pre id="mScript" class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs font-mono text-slate-300 whitespace-pre-wrap leading-relaxed max-h-52 overflow-y-auto"></pre>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs uppercase font-bold tracking-wider text-indigo-400">🎨 Prompt para Imagen (Midjourney / DALL-E):</span>
+            <button onclick="copyToClipboard('mPrompt')" class="text-[11px] text-indigo-400 hover:text-indigo-300 flex items-center gap-1">
+              <i data-lucide="copy" class="w-3 h-3"></i> Copiar Prompt
+            </button>
+          </div>
+          <div id="mPrompt" class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-xs text-indigo-200 font-mono"></div>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs uppercase font-bold tracking-wider text-emerald-400">📝 Caption & Hashtags:</span>
+            <button onclick="copyToClipboard('mCaption')" class="text-[11px] text-emerald-400 hover:text-emerald-300 flex items-center gap-1">
+              <i data-lucide="copy" class="w-3 h-3"></i> Copiar Caption
+            </button>
+          </div>
+          <div id="mCaption" class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs text-slate-300 whitespace-pre-wrap leading-relaxed"></div>
+        </div>
+
+        <!-- Status Action Buttons in Modal -->
+        <div class="pt-4 border-t border-slate-800 flex items-center justify-between">
+          <span class="text-xs text-slate-400">Actualizar Estado:</span>
+          <div class="flex items-center gap-2">
+            <button onclick="updateModalStatus('pendiente')" class="px-2.5 py-1 rounded-lg text-xs bg-slate-800 hover:bg-slate-700 text-slate-300">Pendiente</button>
+            <button onclick="updateModalStatus('grabado')" class="px-2.5 py-1 rounded-lg text-xs bg-indigo-600/30 hover:bg-indigo-600 text-indigo-300">Grabado</button>
+            <button onclick="updateModalStatus('editado')" class="px-2.5 py-1 rounded-lg text-xs bg-amber-600/30 hover:bg-amber-600 text-amber-300">Editado</button>
+            <button onclick="updateModalStatus('publicado')" class="px-2.5 py-1 rounded-lg text-xs bg-emerald-600/30 hover:bg-emerald-600 text-emerald-300">Publicado</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let roadmapData = [];
+    let activeWeek = 'all';
+    let currentModalDay = null;
+
+    async function fetchRoadmap(niche = '') {
+      try {
+        const url = niche ? `/api/roadmap?niche=${encodeURIComponent(niche)}` : '/api/roadmap';
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('API no disponible');
+        const data = await res.json();
+        if (data.success && data.roadmap && data.roadmap.length > 0) {
+          roadmapData = data.roadmap;
+          return;
+        }
+      } catch (e) {
+        console.log('Modo local en frontend activo');
+      }
+      roadmapData = generateFallbackRoadmap(niche || 'Inteligencia Artificial y Productividad');
+    }
+
+    async function handleOracleRun() {
+      const niche = document.getElementById('nicheInput').value.trim();
+      const igAccount = document.getElementById('igAccountInput').value.trim();
+      const btn = document.getElementById('btnOracle');
+      btn.disabled = true;
+      btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Analizando YouTube & Instagram...`;
+      lucide.createIcons();
+
+      try {
+        const res = await fetch('/api/oracle/run-now', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ niche, instagramAccount: igAccount })
+        });
+        const data = await res.json();
+        if (data.success && data.report) {
+          document.getElementById('oracleStatusText').innerText = `✅ Oráculo ejecutado: ${data.report.details}`;
+          document.getElementById('oracleTimestamp').innerText = new Date().toLocaleTimeString();
+          await fetchRoadmap(niche);
+        } else {
+          document.getElementById('oracleStatusText').innerText = 'Ciclo procesado con generador estructurado.';
+        }
+      } catch (err) {
+        document.getElementById('oracleStatusText').innerText = 'Ciclo procesado en memoria local.';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i data-lucide="play" class="w-4 h-4"></i> Disparar Oráculo IA`;
+        renderCards();
+      }
+    }
+
+    async function updateModalStatus(status) {
+      if (!currentModalDay) return;
+      try {
+        await fetch(`/api/roadmap/${currentModalDay.day_number}/status`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status })
+        });
+      } catch (e) {}
+
+      const item = roadmapData.find(d => d.day_number === currentModalDay.day_number);
+      if (item) item.status = status;
+      closeModal();
+      renderCards();
+    }
+
+    function renderCards() {
+      const container = document.getElementById('cardsGrid');
+      container.innerHTML = '';
+
+      const list = activeWeek === 'all' ? roadmapData : roadmapData.filter(d => d.week_number === activeWeek);
+
+      list.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'glass-card rounded-2xl p-5 flex flex-col justify-between hover:border-purple-500/50 hover:shadow-xl hover:shadow-purple-500/10 transition cursor-pointer group';
+        card.onclick = () => openModal(item);
+
+        const formatIcon = item.format === 'Reel' ? 'video' : (item.format === 'Carrusel' ? 'layers' : (item.format === 'Story' ? 'smartphone' : 'image'));
+        const statusColors = {
+          pendiente: 'bg-slate-800 text-slate-300 border-slate-700',
+          grabado: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
+          editado: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+          publicado: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+        };
+        const statusClass = statusColors[item.status] || statusColors.pendiente;
+
+        card.innerHTML = `
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="px-2.5 py-1 rounded-md text-xs font-black bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                DÍA ${item.day_number}
+              </span>
+              <div class="flex items-center gap-1.5">
+                <span class="px-2 py-0.5 rounded text-[10px] font-medium border ${statusClass}">
+                  ${item.status.toUpperCase()}
+                </span>
+                <span class="px-2 py-0.5 rounded text-xs font-medium bg-slate-800 text-slate-300 flex items-center gap-1">
+                  <i data-lucide="${formatIcon}" class="w-3 h-3"></i> ${item.format}
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <span class="text-[11px] font-semibold tracking-wider text-purple-400 uppercase">${item.content_pillar}</span>
+              <h4 class="font-bold text-sm text-slate-100 group-hover:text-purple-300 transition line-clamp-2 mt-0.5">${item.title}</h4>
+            </div>
+
+            <div class="bg-slate-900/80 rounded-xl p-3 border border-slate-800/80">
+              <span class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Gancho (Hook):</span>
+              <p class="text-xs text-slate-300 line-clamp-2 italic">"${item.hook}"</p>
+            </div>
+          </div>
+
+          <div class="pt-4 mt-4 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-400">
+            <span class="flex items-center gap-1 text-purple-400 font-medium">
+              <i data-lucide="eye" class="w-3.5 h-3.5"></i> Ver Guion & Prompt
+            </span>
+            <span>Semana ${item.week_number}</span>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+      lucide.createIcons();
+    }
+
+    function filterWeek(week) {
+      activeWeek = week;
+      document.querySelectorAll('.filter-btn').forEach(b => {
+        b.classList.remove('bg-purple-600', 'text-white');
+        b.classList.add('bg-slate-800', 'text-slate-300');
+      });
+      const activeBtn = document.getElementById(week === 'all' ? 'btn-all' : 'btn-' + week);
+      if (activeBtn) {
+        activeBtn.classList.add('bg-purple-600', 'text-white');
+        activeBtn.classList.remove('bg-slate-800', 'text-slate-300');
+      }
+      renderCards();
+    }
+
+    function openModal(item) {
+      currentModalDay = item;
+      document.getElementById('mDay').innerText = `Día ${item.day_number}`;
+      document.getElementById('mFormat').innerText = item.format;
+      document.getElementById('mPillar').innerText = item.content_pillar;
+      document.getElementById('mTitle').innerText = item.title;
+      document.getElementById('mHook').innerText = item.hook;
+      document.getElementById('mScript').innerText = item.script;
+      document.getElementById('mPrompt').innerText = item.image_prompt;
+      document.getElementById('mCaption').innerText = item.caption;
+
+      document.getElementById('modal').classList.remove('hidden');
+      document.getElementById('modal').classList.add('flex');
+      lucide.createIcons();
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.add('hidden');
+      document.getElementById('modal').classList.remove('flex');
+    }
+
+    function copyToClipboard(elementId) {
+      const text = document.getElementById(elementId).innerText;
+      navigator.clipboard.writeText(text);
+      alert('¡Copiado al portapapeles!');
+    }
+
+    function downloadCSV() {
+      const headers = ['Día,Semana,Pilar,Formato,Título,Gancho,Guion,Prompt_Imagen,Caption,Estado'];
+      const rows = roadmapData.map(d => 
+        [d.day_number, d.week_number, `"${d.content_pillar}"`, `"${d.format}"`, `"${d.title}"`, `"${d.hook}"`, `"${d.script.replace(/\n/g, ' ')}"`, `"${d.image_prompt}"`, `"${d.caption.replace(/\n/g, ' ')}"`, `"${d.status}"`].join(',')
+      );
+      const blob = new Blob([headers.concat(rows).join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `roadmap_instagram_30_dias.csv`;
+      a.click();
+    }
+
+    function downloadJSON() {
+      const blob = new Blob([JSON.stringify(roadmapData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `roadmap_instagram_30_dias.json`;
+      a.click();
+    }
+
+    function generateFallbackRoadmap(niche = 'Inteligencia Artificial y Productividad') {
+      const items = [];
+      const pillars = ['Educativo', 'Entretenimiento', 'Autoridad', 'Educativo', 'Comunidad', 'Autoridad', 'Venta', 'Educativo'];
+      const formats = ['Reel', 'Reel', 'Carrusel', 'Reel', 'Story', 'Reel', 'Carrusel', 'Reel'];
+      
+      for (let day = 1; day <= 30; day++) {
+        const week = Math.min(Math.ceil(day / 7), 4);
+        const pIdx = (day - 1) % pillars.length;
+        items.push({
+          day_number: day,
+          week_number: week,
+          content_pillar: pillars[pIdx],
+          format: formats[pIdx],
+          title: `Día ${day}: Estrategia en ${niche} #${day}`,
+          hook: `Si aplicas esta regla de 3 minutos todos los días en ${niche}, tus resultados se van a multiplicar (Día ${day}).`,
+          script: `[0:00 - 0:03] GANCHO EN PANTALLA: "El 99% ignora este detalle en ${niche} y pierde semanas enteras."\n[0:03 - 0:15] PASO A PASO: Paso 1: Identifica el cuello de botella. Paso 2: Aplica la automatización que te muestro. Paso 3: Mide tu avance cada 7 días.\n[0:15 - 0:25] LECCIÓN: No se trata de trabajar más duro, sino con un método claro y probado.\n[0:25 - 0:30] LLAMADA A LA ACCIÓN: Comenta "PLANTILLA" para recibir los recursos en tu bandeja de entrada.`,
+          image_prompt: `Cinematic Instagram cover visual for Day ${day} focusing on "${niche}". High contrast moody lighting, cyberpunk neon purple and emerald accents, ultra photorealistic, 8k resolution, minimalist typographic balance, 9:16 vertical ratio.`,
+          caption: `La consistencia no es hacer 100 cosas a la vez en ${niche}, es hacer 1 sola cosa bien todos los días. 🚀\n\n📌 Guarda este contenido para revisarlo cuando estés grabando tus videos.\n\n👇 ¿Cuál es tu formato favorito en Instagram actualmente?`,
+          status: 'pendiente'
+        });
+      }
+      return items;
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await fetchRoadmap();
+      renderCards();
+    });
+  </script>
+</body>
+</html>
