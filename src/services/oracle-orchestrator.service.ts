@@ -77,21 +77,9 @@ export class OracleOrchestratorService {
       const roadmapItems: RoadmapDayItem[] = await this.geminiService.generateMonthlyRoadmapWithAI(niche, ytVideos, igAnalysis);
       report.roadmapDaysGenerated = roadmapItems.length;
 
-      // 4. Paso Supabase: Guardar los 30 días en la base de datos
+      // 4. Paso Supabase / Memoria: Guardar los 30 días en la base de datos
       console.log(`🗄️  [Paso 4/4] Sincronizando con base de datos Supabase...`);
-      if (!isMock && supabase) {
-        try {
-          await supabase.from('instagram_content_roadmap').delete().eq('niche', niche);
-          const { error } = await supabase.from('instagram_content_roadmap').insert(roadmapItems);
-          if (error) {
-            console.warn('[Oracle] Aviso al guardar en Supabase:', error.message);
-          } else {
-            console.log(`✅ [Oracle] 30 Días sincronizados en Supabase con éxito.`);
-          }
-        } catch (dbErr: any) {
-          console.warn('[Oracle] Excepción en BD:', dbErr.message);
-        }
-      }
+      await this.roadmapService.saveRoadmap(roadmapItems, niche);
 
       report.status = 'completado';
       report.details = `Se generaron exitosamente 30 contenidos para "${niche}" analizando ${ytVideos.length} videos de YouTube y el perfil ${instagramAccount}.`;

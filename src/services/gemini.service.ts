@@ -30,7 +30,7 @@ export class GeminiService {
     }
 
     try {
-      console.log(`🤖 [Gemini AI] Procesando tendencias de YouTube (${youtubeVideos.length} videos) y cuenta @${instagramData.accountHandle}...`);
+      console.log(`🤖 [Gemini AI] Procesando tendencias de YouTube (${youtubeVideos.length} videos) y cuenta ${instagramData.accountHandle}...`);
 
       const prompt = `
 Eres un Director de Estrategia de Contenido y Viralidad Senior para Instagram.
@@ -72,22 +72,34 @@ Devuelve EXCLUSIVAMENTE un arreglo JSON válido (sin formato markdown adicional,
 ]
 `;
 
-      const response = await this.ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
-        config: {
-          responseMimeType: 'application/json',
-          temperature: 0.7,
-        },
-      });
+      const modelsToTry = ['gemini-3.8-flash', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite'];
 
-      const text = response.text || '';
-      const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
-      const parsed: RoadmapDayItem[] = JSON.parse(cleanJson);
+      for (const modelName of modelsToTry) {
+        try {
+          console.log(`🤖 [Gemini AI] Solicitando roadmap a modelo ${modelName}...`);
+          const response = await this.ai.models.generateContent({
+            model: modelName,
+            contents: prompt,
+            config: {
+              responseMimeType: 'application/json',
+              temperature: 0.7,
+              httpOptions: {
+                timeout: 45000,
+              },
+            },
+          });
 
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        console.log(`✅ [Gemini AI] Se generaron con éxito ${parsed.length} días de contenido para Instagram.`);
-        return parsed;
+          const text = response.text || '';
+          const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
+          const parsed: RoadmapDayItem[] = JSON.parse(cleanJson);
+
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            console.log(`✅ [Gemini AI] (${modelName}) Se generaron con éxito ${parsed.length} días de contenido para Instagram.`);
+            return parsed;
+          }
+        } catch (modelErr: any) {
+          console.warn(`⚠️ [Gemini AI] Modelo ${modelName} falló: ${modelErr.message}`);
+        }
       }
     } catch (err: any) {
       console.warn(`[Gemini AI Error]: ${err.message}. Empleando generador estratégico de respaldo.`);

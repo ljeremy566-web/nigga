@@ -115,7 +115,7 @@ export class RoadmapService {
     return false;
   }
 
-  private async saveRoadmap(items: RoadmapDayItem[], niche: string) {
+  public async saveRoadmap(items: RoadmapDayItem[], niche: string) {
     if (!isMock && supabase) {
       try {
         // Limpiar roadmap anterior del mismo nicho si existe
