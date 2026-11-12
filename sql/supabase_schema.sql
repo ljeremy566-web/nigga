@@ -29,6 +29,19 @@ CREATE TABLE IF NOT EXISTS public.youtube_videos (
     created_at TIMESTAMPTZ DEFAULT now() NOT NULL
 );
 
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'youtube_videos' AND column_name = 'id' AND data_type = 'text'
+    ) THEN
+        ALTER TABLE public.youtube_videos ALTER COLUMN id SET DEFAULT gen_random_uuid()::text;
+    END IF;
+END $$;
+ALTER TABLE public.youtube_videos ADD COLUMN IF NOT EXISTS video_id TEXT;
+ALTER TABLE public.youtube_videos ADD COLUMN IF NOT EXISTS search_query TEXT;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_youtube_videos_video_id ON public.youtube_videos(video_id);
+
 -- 3. Tabla de Roadmap de Contenido para Instagram (30 Días)
 CREATE TABLE IF NOT EXISTS public.instagram_content_roadmap (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
