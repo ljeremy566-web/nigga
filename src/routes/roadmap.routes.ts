@@ -29,7 +29,7 @@ router.get('/', async (req: Request, res: Response) => {
 // POST /api/roadmap/generate { niche: "..." }
 router.post('/generate', async (req: Request, res: Response) => {
   try {
-    const { niche } = req.body;
+    const { niche } = req.body || {};
     const targetNiche = niche || 'Inteligencia Artificial y Productividad';
     const items = await roadmapService.generate30DayRoadmap(targetNiche);
 
@@ -48,7 +48,7 @@ router.post('/generate', async (req: Request, res: Response) => {
 router.patch('/:id/status', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { status } = req.body;
+    const { status } = req.body || {};
 
     const validStatuses = ['pendiente', 'grabado', 'editado', 'publicado'];
     if (!validStatuses.includes(status)) {

@@ -97,17 +97,27 @@ export class RoadmapService {
   }
 
   async updateItemStatus(idOrDay: string | number, status: 'pendiente' | 'grabado' | 'editado' | 'publicado'): Promise<boolean> {
-    if (!isMock && supabase) {
+    const raw = String(idOrDay ?? '').trim();
+    const isNumeric = /^\d+$/.test(raw);
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(raw);
+
+    if (!isMock && supabase && (isNumeric || isUuid)) {
       try {
-        const filter = typeof idOrDay === 'number' ? { day_number: idOrDay } : { id: idOrDay };
-        const { error } = await supabase.from('instagram_content_roadmap').update({ status, updated_at: new Date().toISOString() }).match(filter);
-        if (!error) return true;
+        const filter = isNumeric ? { day_number: Number(raw) } : { id: raw };
+        const { data, error } = await supabase
+          .from('instagram_content_roadmap')
+          .update({ status, updated_at: new Date().toISOString() })
+          .match(filter)
+          .select('id');
+        if (!error && data && data.length > 0) return true;
       } catch (err: any) {
         console.warn('[RoadmapService] Error al actualizar estado en Supabase:', err.message);
       }
     }
 
-    const idx = localRoadmapDb.findIndex((i) => i.id === idOrDay || i.day_number === Number(idOrDay));
+    const idx = localRoadmapDb.findIndex(
+      (i) => (i.id !== undefined && i.id === raw) || (isNumeric && i.day_number === Number(raw))
+    );
     if (idx !== -1) {
       localRoadmapDb[idx].status = status;
       return true;

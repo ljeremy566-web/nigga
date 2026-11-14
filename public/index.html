@@ -1,467 +1,417 @@
 <!DOCTYPE html>
-<html lang="es" class="dark">
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Content Studio | Oracle & Roadmap 30 Días Instagram</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-    body { font-family: 'Plus Jakarta Sans', sans-serif; }
-    .glass-card {
-      background: rgba(17, 24, 39, 0.75);
-      backdrop-filter: blur(14px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-  </style>
+  <title>Content Studio — Roadmap Interactivo de 30 Días</title>
+  <meta name="description" content="Planificador minimalista interactivo de 30 días para Instagram impulsado por tendencias reales de YouTube Data API v3, Gemini AI y Supabase.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2318181b' stroke-width='2'%3E%3Crect x='3' y='4' width='18' height='18' rx='2'/%3E%3Cline x1='3' y1='10' x2='21' y2='10'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-purple-500 selection:text-white">
-
-  <!-- Header -->
-  <header class="border-b border-slate-800 bg-slate-900/60 backdrop-blur-md sticky top-0 z-40">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-purple-500/25">
-          <i data-lucide="sparkles" class="w-5 h-5 text-white"></i>
+<body class="app-shell">
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand-group">
+        <div class="brand-mark" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
         </div>
         <div>
-          <h1 class="font-bold text-lg leading-tight flex items-center gap-2">
-            AI Content Studio
-            <span class="text-xs px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 font-medium">Oráculo & 30 Días Instagram</span>
-          </h1>
-          <p class="text-xs text-slate-400">YouTube Data API v3 • Instagram Profile Intelligence • Gemini AI • Supabase</p>
+          <h1 class="brand-title">Content Studio</h1>
+          <p class="brand-subtitle">Roadmap interactivo de 30 días · Tendencias reales de YouTube</p>
         </div>
       </div>
 
-      <div class="flex items-center gap-2 text-xs">
-        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20 font-medium">
-          <span class="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span>
-          Oracle Cron: Día 1 / Mes
-        </span>
-        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">
-          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-          YouTube API
-        </span>
-        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-medium">
-          <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
-          Supabase
-        </span>
+      <nav class="tab-nav" role="tablist" aria-label="Vistas principales">
+        <button id="tab-roadmap" class="tab-btn" role="tab" aria-selected="true" aria-controls="view-roadmap" data-tab="roadmap" type="button">Roadmap 30 Días</button>
+        <button id="tab-youtube" class="tab-btn" role="tab" aria-selected="false" aria-controls="view-youtube" data-tab="youtube" type="button">YouTube Research</button>
+        <button id="tab-oracle" class="tab-btn" role="tab" aria-selected="false" aria-controls="view-oracle" data-tab="oracle" type="button">Oráculo &amp; Fuentes</button>
+      </nav>
+
+      <div class="header-status">
+        <span id="statusHealthBadge" class="badge">Conectando…</span>
+        <span id="statusOracleBadge" class="badge">Oráculo listo</span>
+        <span id="statusSourceBadge" class="badge badge--simulated" title="YouTube Data API v3, Gemini AI y Supabase son reales; el análisis de Instagram usa plantilla simulada">YouTube Real · IG Simulado</span>
       </div>
     </div>
   </header>
 
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 space-y-8">
-
-    <!-- Oracle Autonomous Engine Box -->
-    <section class="glass-card p-6 rounded-2xl border-purple-500/40 shadow-xl shadow-purple-950/20 space-y-4">
-      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div>
-          <h2 class="text-base font-bold text-white flex items-center gap-2">
-            <i data-lucide="cpu" class="w-5 h-5 text-purple-400"></i> Oráculo Autónomo de Tendencias (YouTube + Instagram)
-          </h2>
-          <p class="text-xs text-slate-400 mt-1">Rastrea videos virales en YouTube y patrones de una cuenta de Instagram para generar ideas completas cada mes con Gemini AI.</p>
+  <main class="app-main">
+    <!-- Vista 1: Roadmap Interactivo de 30 Días (Inicio) -->
+    <section id="view-roadmap" class="view-panel fade-in" role="tabpanel" aria-labelledby="tab-roadmap">
+      <!-- Barra de comandos -->
+      <div class="surface-card command-bar">
+        <div class="field-group">
+          <label class="field-label" for="nicheInput">Nicho o temática</label>
+          <input id="nicheInput" class="input" type="text" value="Inteligencia Artificial y Productividad" placeholder="Ej. Inteligencia Artificial y Productividad">
         </div>
-        <div class="flex flex-wrap items-center gap-3">
-          <div class="space-y-1">
-            <label class="text-[10px] uppercase font-bold text-slate-400">Nicho / Temática:</label>
-            <input type="text" id="nicheInput" value="Inteligencia Artificial y Productividad" class="bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 w-64 block">
+
+        <div class="field-group">
+          <label class="field-label" for="igAccountInput">
+            <span>Referencia Instagram</span>
+            <span class="field-hint">Tono simulado</span>
+          </label>
+          <input id="igAccountInput" class="input" type="text" value="@creatorshub" placeholder="@cuenta">
+        </div>
+
+        <div class="command-actions">
+          <button id="btnLoadRoadmap" class="btn btn-secondary" type="button">Cargar</button>
+          <button id="btnGenerateRoadmap" class="btn btn-primary" type="button">Generar 30 días</button>
+          <button id="btnRunOracle" class="btn btn-secondary" type="button">Ejecutar Oráculo IA</button>
+          <button id="btnExportCsv" class="btn btn-subtle" type="button">CSV</button>
+          <button id="btnExportJson" class="btn btn-subtle" type="button">JSON</button>
+        </div>
+      </div>
+
+      <div id="roadmapSourceNotice" class="source-notice hidden" role="status"></div>
+
+      <!-- Barra de progreso y filtros -->
+      <div class="surface-card controls-bar">
+        <div class="progress-row">
+          <div class="progress-meta">
+            <span id="progressSummaryText" class="progress-label tabular-nums">0 / 30 publicados · 0%</span>
+            <div class="progress-track" aria-hidden="true">
+              <div id="progressFill" class="progress-fill"></div>
+            </div>
           </div>
-          <div class="space-y-1">
-            <label class="text-[10px] uppercase font-bold text-slate-400">Cuenta de Instagram de Referencia:</label>
-            <input type="text" id="igAccountInput" value="@creatorshub" class="bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 w-48 block">
+
+          <div class="status-counters">
+            <span class="counter-pill">Total <strong id="countTotal" class="tabular-nums">0</strong></span>
+            <span class="counter-pill">Pendiente <strong id="countPendiente" class="tabular-nums">0</strong></span>
+            <span class="counter-pill">Grabado <strong id="countGrabado" class="tabular-nums">0</strong></span>
+            <span class="counter-pill">Editado <strong id="countEditado" class="tabular-nums">0</strong></span>
+            <span class="counter-pill">Publicado <strong id="countPublicado" class="tabular-nums">0</strong></span>
           </div>
-          <div class="pt-5">
-            <button onclick="handleOracleRun()" id="btnOracle" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-xs font-bold text-white transition flex items-center gap-2 shadow-lg shadow-purple-600/30 whitespace-nowrap">
-              <i data-lucide="play" class="w-4 h-4"></i> Disparar Oráculo IA
-            </button>
+        </div>
+
+        <div class="filters-row">
+          <div id="weekFilterGroup" class="week-filter-group" role="group" aria-label="Filtrar por semana">
+            <button id="btnWeekAll" class="btn btn-secondary btn-sm is-active" data-week="all" type="button">Todas</button>
+            <button id="btnWeek1" class="btn btn-secondary btn-sm" data-week="1" type="button">Sem 1</button>
+            <button id="btnWeek2" class="btn btn-secondary btn-sm" data-week="2" type="button">Sem 2</button>
+            <button id="btnWeek3" class="btn btn-secondary btn-sm" data-week="3" type="button">Sem 3</button>
+            <button id="btnWeek4" class="btn btn-secondary btn-sm" data-week="4" type="button">Sem 4</button>
+          </div>
+
+          <div class="filter-controls-right">
+            <div class="filter-search-wrap">
+              <label class="sr-only" for="searchRoadmapInput">Buscar en el roadmap</label>
+              <input id="searchRoadmapInput" class="input" type="search" placeholder="Buscar título, gancho o guion…">
+            </div>
+
+            <div class="filter-select-wrap select-wrap">
+              <label class="sr-only" for="formatFilterSelect">Filtrar por formato</label>
+              <select id="formatFilterSelect" class="select">
+                <option value="all">Todos los formatos</option>
+                <option value="Reel">Reel</option>
+                <option value="Carrusel">Carrusel</option>
+                <option value="Story">Story</option>
+              </select>
+              <svg class="select-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </div>
+
+            <div class="filter-select-wrap select-wrap">
+              <label class="sr-only" for="statusFilterSelect">Filtrar por estado</label>
+              <select id="statusFilterSelect" class="select">
+                <option value="all">Todos los estados</option>
+                <option value="pendiente">Pendiente</option>
+                <option value="grabado">Grabado</option>
+                <option value="editado">Editado</option>
+                <option value="publicado">Publicado</option>
+              </select>
+              <svg class="select-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </div>
+
+            <div class="view-mode-group" role="group" aria-label="Modo de vista">
+              <button id="viewModeGrid" class="btn btn-secondary btn-sm is-active" type="button" title="Vista en cuadrícula">Cuadrícula</button>
+              <button id="viewModeTimeline" class="btn btn-secondary btn-sm" type="button" title="Vista en línea de tiempo">Lista</button>
+            </div>
+
+            <button id="btnResetFilters" class="btn btn-subtle btn-sm" type="button">Limpiar</button>
           </div>
         </div>
       </div>
 
-      <!-- Oracle Status Banner -->
-      <div id="oracleReportBox" class="p-3.5 rounded-xl bg-purple-950/30 border border-purple-800/40 text-xs text-purple-200 flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i>
-          <span id="oracleStatusText">Oráculo sincronizado. Cron autónomo programado para ejecutarse el día 1 de cada mes.</span>
-        </div>
-        <span id="oracleTimestamp" class="text-[11px] text-slate-400">Listo</span>
-      </div>
-    </section>
-
-    <!-- Hero / Stats Summary -->
-    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <div class="glass-card p-5 rounded-2xl border-purple-500/20 relative overflow-hidden">
-        <div class="text-xs uppercase font-bold tracking-wider text-purple-400 mb-1">Total de Contenidos</div>
-        <div id="statTotal" class="text-3xl font-extrabold text-white">30 Días</div>
-        <div class="text-xs text-slate-400 mt-1">1 mes completo planificado</div>
-      </div>
-      <div class="glass-card p-5 rounded-2xl border-indigo-500/20 relative overflow-hidden">
-        <div class="text-xs uppercase font-bold tracking-wider text-indigo-400 mb-1">Formato Principal</div>
-        <div class="text-3xl font-extrabold text-white">Reels & Carruseles</div>
-        <div class="text-xs text-slate-400 mt-1">Ganchos de 0-3 segundos</div>
-      </div>
-      <div class="glass-card p-5 rounded-2xl border-emerald-500/20 relative overflow-hidden">
-        <div class="text-xs uppercase font-bold tracking-wider text-emerald-400 mb-1">Prompts de Imágenes</div>
-        <div class="text-3xl font-extrabold text-white">30 Generados</div>
-        <div class="text-xs text-slate-400 mt-1">Para Midjourney / DALL-E</div>
-      </div>
-      <div class="glass-card p-5 rounded-2xl border-amber-500/20 relative overflow-hidden">
-        <div class="text-xs uppercase font-bold tracking-wider text-amber-400 mb-1">Estrategia</div>
-        <div class="text-3xl font-extrabold text-white">4 Fases</div>
-        <div class="text-xs text-slate-400 mt-1">Atracción → Venta</div>
-      </div>
-    </section>
-
-    <!-- Strategy Phases Overview -->
-    <section class="glass-card p-6 rounded-2xl space-y-4">
-      <h3 class="font-bold text-base flex items-center gap-2 text-white">
-        <i data-lucide="layers" class="w-4 h-4 text-purple-400"></i> Arquitectura Estratégica del Mes
-      </h3>
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
-        <div class="p-4 rounded-xl bg-purple-950/30 border border-purple-800/40 space-y-1.5">
-          <div class="flex items-center justify-between">
-            <span class="font-bold text-purple-300">Semana 1</span>
-            <span class="px-2 py-0.5 rounded text-[10px] bg-purple-500/20 text-purple-200">Atracción</span>
-          </div>
-          <p class="text-slate-400 leading-relaxed">Reels virales, mitos rotos y ganchos de alta retención para atraer tráfico frío.</p>
-        </div>
-        <div class="p-4 rounded-xl bg-indigo-950/30 border border-indigo-800/40 space-y-1.5">
-          <div class="flex items-center justify-between">
-            <span class="font-bold text-indigo-300">Semana 2</span>
-            <span class="px-2 py-0.5 rounded text-[10px] bg-indigo-500/20 text-indigo-200">Autoridad</span>
-          </div>
-          <p class="text-slate-400 leading-relaxed">Carruseles educativos profundos y micro-hacks que te posicionan como referente.</p>
-        </div>
-        <div class="p-4 rounded-xl bg-emerald-950/30 border border-emerald-800/40 space-y-1.5">
-          <div class="flex items-center justify-between">
-            <span class="font-bold text-emerald-300">Semana 3</span>
-            <span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-200">Comunidad</span>
-          </div>
-          <p class="text-slate-400 leading-relaxed">Historias de errores reales, Q&A interactivo y debates que generan conversaciones.</p>
-        </div>
-        <div class="p-4 rounded-xl bg-amber-950/30 border border-amber-800/40 space-y-1.5">
-          <div class="flex items-center justify-between">
-            <span class="font-bold text-amber-300">Semana 4</span>
-            <span class="px-2 py-0.5 rounded text-[10px] bg-amber-500/20 text-amber-200">Conversión</span>
-          </div>
-          <p class="text-slate-400 leading-relaxed">Roadmap definitivo y llamadas a la acción directas para mensajes y ventas.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Filter and Action Bar -->
-    <div class="flex flex-wrap items-center justify-between gap-4">
-      <div class="flex flex-wrap items-center gap-2">
-        <span class="text-xs text-slate-400 font-semibold uppercase">Semanas:</span>
-        <button onclick="filterWeek('all')" id="btn-all" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-purple-600 text-white">Todas</button>
-        <button onclick="filterWeek(1)" id="btn-1" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">Semana 1</button>
-        <button onclick="filterWeek(2)" id="btn-2" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">Semana 2</button>
-        <button onclick="filterWeek(3)" id="btn-3" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">Semana 3</button>
-        <button onclick="filterWeek(4)" id="btn-4" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">Semana 4</button>
-      </div>
-
-      <div class="flex items-center gap-2">
-        <button onclick="downloadCSV()" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 flex items-center gap-1.5 transition">
-          <i data-lucide="download" class="w-3.5 h-3.5"></i> CSV
-        </button>
-        <button onclick="downloadJSON()" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 flex items-center gap-1.5 transition">
-          <i data-lucide="file-json" class="w-3.5 h-3.5"></i> JSON
-        </button>
-      </div>
-    </div>
-
-    <!-- Cards Grid Container -->
-    <div id="cardsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-      <!-- Injected via JS -->
-    </div>
-  </main>
-
-  <!-- Modal Detail -->
-  <div id="modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
-      <div class="p-5 border-b border-slate-800 flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <span id="mDay" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">Día</span>
-          <span id="mFormat" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-indigo-500/20 text-indigo-300">Formato</span>
-          <span id="mPillar" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-800 text-slate-300">Pilar</span>
-        </div>
-        <button onclick="closeModal()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <div class="p-6 overflow-y-auto space-y-5 text-sm">
-        <div>
-          <h4 id="mTitle" class="text-lg font-bold text-white mb-2"></h4>
-          <div class="bg-purple-950/40 border border-purple-800/40 rounded-xl p-3.5">
-            <span class="text-xs uppercase font-bold tracking-wider text-purple-400 block mb-1">🎯 Gancho (Hook):</span>
-            <p id="mHook" class="text-purple-200 font-medium"></p>
+      <!-- Espacio de trabajo Maestro-Detalle -->
+      <div class="roadmap-workspace">
+        <div class="roadmap-list-pane">
+          <div id="roadmapList" class="roadmap-list roadmap-list--grid" aria-live="polite"></div>
+          <div id="roadmapEmptyState" class="empty-state hidden">
+            <h3>Sin resultados para estos filtros</h3>
+            <p>Ajusta la semana, el formato, el estado o el término de búsqueda.</p>
+            <button id="btnEmptyResetFilters" class="btn btn-secondary btn-sm" type="button">Restablecer filtros</button>
           </div>
         </div>
 
-        <div>
-          <div class="flex items-center justify-between mb-1">
-            <span class="text-xs uppercase font-bold tracking-wider text-slate-400">🎬 Guion Completo:</span>
-            <button onclick="copyToClipboard('mScript')" class="text-[11px] text-purple-400 hover:text-purple-300 flex items-center gap-1">
-              <i data-lucide="copy" class="w-3 h-3"></i> Copiar Guion
-            </button>
+        <div id="inspectorBackdrop" class="inspector-backdrop hidden" aria-hidden="true"></div>
+
+        <aside id="dayInspector" class="day-inspector" role="region" aria-label="Inspector del día seleccionado">
+          <div class="inspector-header">
+            <div class="inspector-badges">
+              <span id="inspectorDayBadge" class="badge badge--obsidian tabular-nums">Día 01</span>
+              <span id="inspectorWeekBadge" class="badge">Semana 1</span>
+              <span id="inspectorFormatBadge" class="badge">Reel</span>
+              <span id="inspectorPillarBadge" class="badge">Atracción</span>
+              <span id="localDraftBadge" class="badge badge--editado hidden">Editado localmente</span>
+            </div>
+
+            <div class="inspector-nav">
+              <button id="btnPrevDay" class="btn btn-secondary btn-sm btn-icon" type="button" aria-label="Día anterior" title="Día anterior">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+              </button>
+              <button id="btnNextDay" class="btn btn-secondary btn-sm btn-icon" type="button" aria-label="Día siguiente" title="Día siguiente">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </button>
+              <button id="btnToggleEditMode" class="btn btn-secondary btn-sm" type="button">Editar</button>
+              <button id="btnCloseDrawer" class="btn btn-secondary btn-sm btn-icon" type="button" aria-label="Cerrar panel" title="Cerrar">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            </div>
           </div>
-          <pre id="mScript" class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs font-mono text-slate-300 whitespace-pre-wrap leading-relaxed max-h-52 overflow-y-auto"></pre>
-        </div>
 
-        <div>
-          <div class="flex items-center justify-between mb-1">
-            <span class="text-xs uppercase font-bold tracking-wider text-indigo-400">🎨 Prompt para Imagen (Midjourney / DALL-E):</span>
-            <button onclick="copyToClipboard('mPrompt')" class="text-[11px] text-indigo-400 hover:text-indigo-300 flex items-center gap-1">
-              <i data-lucide="copy" class="w-3 h-3"></i> Copiar Prompt
-            </button>
-          </div>
-          <div id="mPrompt" class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-xs text-indigo-200 font-mono"></div>
-        </div>
-
-        <div>
-          <div class="flex items-center justify-between mb-1">
-            <span class="text-xs uppercase font-bold tracking-wider text-emerald-400">📝 Caption & Hashtags:</span>
-            <button onclick="copyToClipboard('mCaption')" class="text-[11px] text-emerald-400 hover:text-emerald-300 flex items-center gap-1">
-              <i data-lucide="copy" class="w-3 h-3"></i> Copiar Caption
-            </button>
-          </div>
-          <div id="mCaption" class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs text-slate-300 whitespace-pre-wrap leading-relaxed"></div>
-        </div>
-
-        <!-- Status Action Buttons in Modal -->
-        <div class="pt-4 border-t border-slate-800 flex items-center justify-between">
-          <span class="text-xs text-slate-400">Actualizar Estado:</span>
-          <div class="flex items-center gap-2">
-            <button onclick="updateModalStatus('pendiente')" class="px-2.5 py-1 rounded-lg text-xs bg-slate-800 hover:bg-slate-700 text-slate-300">Pendiente</button>
-            <button onclick="updateModalStatus('grabado')" class="px-2.5 py-1 rounded-lg text-xs bg-indigo-600/30 hover:bg-indigo-600 text-indigo-300">Grabado</button>
-            <button onclick="updateModalStatus('editado')" class="px-2.5 py-1 rounded-lg text-xs bg-amber-600/30 hover:bg-amber-600 text-amber-300">Editado</button>
-            <button onclick="updateModalStatus('publicado')" class="px-2.5 py-1 rounded-lg text-xs bg-emerald-600/30 hover:bg-emerald-600 text-emerald-300">Publicado</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    let roadmapData = [];
-    let activeWeek = 'all';
-    let currentModalDay = null;
-
-    async function fetchRoadmap(niche = '') {
-      try {
-        const url = niche ? `/api/roadmap?niche=${encodeURIComponent(niche)}` : '/api/roadmap';
-        const res = await fetch(url);
-        if (!res.ok) throw new Error('API no disponible');
-        const data = await res.json();
-        if (data.success && data.roadmap && data.roadmap.length > 0) {
-          roadmapData = data.roadmap;
-          return;
-        }
-      } catch (e) {
-        console.log('Modo local en frontend activo');
-      }
-      roadmapData = generateFallbackRoadmap(niche || 'Inteligencia Artificial y Productividad');
-    }
-
-    async function handleOracleRun() {
-      const niche = document.getElementById('nicheInput').value.trim();
-      const igAccount = document.getElementById('igAccountInput').value.trim();
-      const btn = document.getElementById('btnOracle');
-      btn.disabled = true;
-      btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Analizando YouTube & Instagram...`;
-      lucide.createIcons();
-
-      try {
-        const res = await fetch('/api/oracle/run-now', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ niche, instagramAccount: igAccount })
-        });
-        const data = await res.json();
-        if (data.success && data.report) {
-          document.getElementById('oracleStatusText').innerText = `✅ Oráculo ejecutado: ${data.report.details}`;
-          document.getElementById('oracleTimestamp').innerText = new Date().toLocaleTimeString();
-          await fetchRoadmap(niche);
-        } else {
-          document.getElementById('oracleStatusText').innerText = 'Ciclo procesado con generador estructurado.';
-        }
-      } catch (err) {
-        document.getElementById('oracleStatusText').innerText = 'Ciclo procesado en memoria local.';
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = `<i data-lucide="play" class="w-4 h-4"></i> Disparar Oráculo IA`;
-        renderCards();
-      }
-    }
-
-    async function updateModalStatus(status) {
-      if (!currentModalDay) return;
-      try {
-        await fetch(`/api/roadmap/${currentModalDay.day_number}/status`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status })
-        });
-      } catch (e) {}
-
-      const item = roadmapData.find(d => d.day_number === currentModalDay.day_number);
-      if (item) item.status = status;
-      closeModal();
-      renderCards();
-    }
-
-    function renderCards() {
-      const container = document.getElementById('cardsGrid');
-      container.innerHTML = '';
-
-      const list = activeWeek === 'all' ? roadmapData : roadmapData.filter(d => d.week_number === activeWeek);
-
-      list.forEach(item => {
-        const card = document.createElement('div');
-        card.className = 'glass-card rounded-2xl p-5 flex flex-col justify-between hover:border-purple-500/50 hover:shadow-xl hover:shadow-purple-500/10 transition cursor-pointer group';
-        card.onclick = () => openModal(item);
-
-        const formatIcon = item.format === 'Reel' ? 'video' : (item.format === 'Carrusel' ? 'layers' : (item.format === 'Story' ? 'smartphone' : 'image'));
-        const statusColors = {
-          pendiente: 'bg-slate-800 text-slate-300 border-slate-700',
-          grabado: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
-          editado: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
-          publicado: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-        };
-        const statusClass = statusColors[item.status] || statusColors.pendiente;
-
-        card.innerHTML = `
-          <div class="space-y-3">
-            <div class="flex items-center justify-between">
-              <span class="px-2.5 py-1 rounded-md text-xs font-black bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                DÍA ${item.day_number}
-              </span>
-              <div class="flex items-center gap-1.5">
-                <span class="px-2 py-0.5 rounded text-[10px] font-medium border ${statusClass}">
-                  ${item.status.toUpperCase()}
-                </span>
-                <span class="px-2 py-0.5 rounded text-xs font-medium bg-slate-800 text-slate-300 flex items-center gap-1">
-                  <i data-lucide="${formatIcon}" class="w-3 h-3"></i> ${item.format}
-                </span>
+          <div id="dayInspectorContent" class="inspector-body">
+            <div class="inspector-status-bar">
+              <span class="inspector-status-label">Estado</span>
+              <div id="inspectorStatusGroup" class="inspector-status-group">
+                <button id="statusBtn-pendiente" class="status-btn" data-status="pendiente" aria-pressed="true" type="button">Pendiente</button>
+                <button id="statusBtn-grabado" class="status-btn" data-status="grabado" aria-pressed="false" type="button">Grabado</button>
+                <button id="statusBtn-editado" class="status-btn" data-status="editado" aria-pressed="false" type="button">Editado</button>
+                <button id="statusBtn-publicado" class="status-btn" data-status="publicado" aria-pressed="false" type="button">Publicado</button>
               </div>
             </div>
 
-            <div>
-              <span class="text-[11px] font-semibold tracking-wider text-purple-400 uppercase">${item.content_pillar}</span>
-              <h4 class="font-bold text-sm text-slate-100 group-hover:text-purple-300 transition line-clamp-2 mt-0.5">${item.title}</h4>
+            <h2 id="inspectorTitle" class="inspector-title">Cargando roadmap…</h2>
+
+            <!-- Gancho -->
+            <div class="inspector-section">
+              <div class="section-header-row">
+                <span class="section-kicker">Gancho (0–3s)</span>
+                <button id="btnCopyHook" class="btn btn-subtle btn-sm" type="button">Copiar gancho</button>
+              </div>
+              <p id="inspectorHook" class="hook-box">—</p>
             </div>
 
-            <div class="bg-slate-900/80 rounded-xl p-3 border border-slate-800/80">
-              <span class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Gancho (Hook):</span>
-              <p class="text-xs text-slate-300 line-clamp-2 italic">"${item.hook}"</p>
+            <!-- Sugerencia visual y Prompt de imagen -->
+            <div class="inspector-section">
+              <div class="section-header-row">
+                <span class="section-kicker">Sugerencia visual &amp; Prompt de imagen</span>
+                <button id="btnCopyPrompt" class="btn btn-subtle btn-sm" type="button">Copiar prompt</button>
+              </div>
+
+              <div class="visual-preview-grid">
+                <div id="visualAspectFrame" class="visual-aspect-frame" data-ratio="9:16">
+                  <div class="visual-frame-top">
+                    <span id="visualFrameDay">Día 01</span>
+                    <span id="visualFrameFormat">Reel</span>
+                  </div>
+                  <div class="visual-frame-wire" aria-hidden="true">
+                    <div class="wire-bar"></div>
+                    <div class="wire-bar wire-bar--short"></div>
+                  </div>
+                  <div class="visual-frame-cta">Hook · Zona Segura</div>
+                </div>
+
+                <div class="visual-cues-col">
+                  <div class="visual-ratio-row">
+                    <span id="visualRatioLabel" class="badge">Vertical 9:16 (1080×1920)</span>
+                  </div>
+                  <p id="visualCompositionTip" class="visual-composition-tip">Deja un 15% libre arriba y abajo para la interfaz de Instagram y centra el titular en el tercio superior.</p>
+                  <img id="visualRefThumb" class="visual-ref-thumb hidden" alt="Miniatura de referencia en YouTube" loading="lazy">
+                </div>
+              </div>
+
+              <pre id="inspectorImagePrompt" class="code-block">—</pre>
+            </div>
+
+            <!-- Guion completo -->
+            <div class="inspector-section">
+              <div class="section-header-row">
+                <span class="section-kicker">Guion completo</span>
+                <button id="btnCopyScript" class="btn btn-subtle btn-sm" type="button">Copiar guion</button>
+              </div>
+              <pre id="inspectorScript" class="code-block">—</pre>
+            </div>
+
+            <!-- Caption & Hashtags -->
+            <div class="inspector-section">
+              <div class="section-header-row">
+                <span class="section-kicker">Caption &amp; Hashtags</span>
+                <button id="btnCopyCaption" class="btn btn-subtle btn-sm" type="button">Copiar caption</button>
+              </div>
+              <div id="inspectorCaption" class="caption-box">—</div>
+              <div id="inspectorHashtags" class="hashtags-list"></div>
+            </div>
+
+            <!-- Referencia de YouTube -->
+            <div id="inspectorYoutubeRef" class="yt-ref-box hidden">
+              <span class="kv-key">Referencia de YouTube:</span>
+              <a id="inspectorRefLink" class="yt-ref-link" href="#" target="_blank" rel="noopener noreferrer">Ver video</a>
+            </div>
+
+            <!-- Editor de borrador local -->
+            <form id="draftEditorForm" class="draft-editor-form hidden">
+              <div class="field-group">
+                <label class="field-label" for="editHookInput">Editar gancho (local)</label>
+                <textarea id="editHookInput" class="textarea" rows="2"></textarea>
+              </div>
+              <div class="field-group">
+                <label class="field-label" for="editPromptInput">Editar prompt de imagen (local)</label>
+                <textarea id="editPromptInput" class="textarea textarea--mono" rows="3"></textarea>
+              </div>
+              <div class="field-group">
+                <label class="field-label" for="editScriptInput">Editar guion (local)</label>
+                <textarea id="editScriptInput" class="textarea textarea--mono" rows="5"></textarea>
+              </div>
+              <div class="field-group">
+                <label class="field-label" for="editCaptionInput">Editar caption (local)</label>
+                <textarea id="editCaptionInput" class="textarea" rows="4"></textarea>
+              </div>
+              <div id="draftEditActions" class="draft-edit-actions">
+                <button id="btnResetDraft" class="btn btn-subtle btn-sm" type="button">Restaurar original</button>
+                <div class="draft-edit-buttons">
+                  <button id="btnCancelDraft" class="btn btn-secondary btn-sm" type="button">Cancelar</button>
+                  <button id="btnSaveDraft" class="btn btn-primary btn-sm" type="submit">Guardar borrador</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- Vista 2: YouTube Research -->
+    <section id="view-youtube" class="view-panel hidden" role="tabpanel" aria-labelledby="tab-youtube">
+      <div class="surface-card yt-search-card">
+        <form id="ytSearchForm" class="yt-search-form">
+          <div class="field-group">
+            <label class="field-label" for="ytSearchInput">Buscar tendencias reales en YouTube Data API v3</label>
+            <input id="ytSearchInput" class="input" type="search" placeholder="Ej. automatización con IA, productividad, marketing...">
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="ytMaxResultsSelect">Resultados</label>
+            <div class="select-wrap">
+              <select id="ytMaxResultsSelect" class="select">
+                <option value="6" selected>6 videos</option>
+                <option value="10">10 videos</option>
+                <option value="15">15 videos</option>
+              </select>
+              <svg class="select-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
             </div>
           </div>
 
-          <div class="pt-4 mt-4 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-400">
-            <span class="flex items-center gap-1 text-purple-400 font-medium">
-              <i data-lucide="eye" class="w-3.5 h-3.5"></i> Ver Guion & Prompt
-            </span>
-            <span>Semana ${item.week_number}</span>
+          <button id="btnYtSearch" class="btn btn-primary" type="submit">Buscar en YouTube</button>
+        </form>
+
+        <div class="yt-history-wrap">
+          <span class="section-kicker">Historial reciente de búsquedas</span>
+          <div id="ytHistoryList" class="yt-history-list">
+            <span class="badge">Sin búsquedas cargadas aún</span>
           </div>
-        `;
-        container.appendChild(card);
-      });
-      lucide.createIcons();
-    }
+        </div>
+      </div>
 
-    function filterWeek(week) {
-      activeWeek = week;
-      document.querySelectorAll('.filter-btn').forEach(b => {
-        b.classList.remove('bg-purple-600', 'text-white');
-        b.classList.add('bg-slate-800', 'text-slate-300');
-      });
-      const activeBtn = document.getElementById(week === 'all' ? 'btn-all' : 'btn-' + week);
-      if (activeBtn) {
-        activeBtn.classList.add('bg-purple-600', 'text-white');
-        activeBtn.classList.remove('bg-slate-800', 'text-slate-300');
-      }
-      renderCards();
-    }
+      <div id="ytResultsSection" class="hidden">
+        <div class="section-heading-bar">
+          <h2>Resultados de la búsqueda</h2>
+        </div>
+        <div id="ytResultsList" class="videos-grid"></div>
+      </div>
 
-    function openModal(item) {
-      currentModalDay = item;
-      document.getElementById('mDay').innerText = `Día ${item.day_number}`;
-      document.getElementById('mFormat').innerText = item.format;
-      document.getElementById('mPillar').innerText = item.content_pillar;
-      document.getElementById('mTitle').innerText = item.title;
-      document.getElementById('mHook').innerText = item.hook;
-      document.getElementById('mScript').innerText = item.script;
-      document.getElementById('mPrompt').innerText = item.image_prompt;
-      document.getElementById('mCaption').innerText = item.caption;
+      <div class="section-heading-bar">
+        <h2>Catálogo de videos almacenados</h2>
+      </div>
+      <div id="ytVideosGrid" class="videos-grid"></div>
+    </section>
 
-      document.getElementById('modal').classList.remove('hidden');
-      document.getElementById('modal').classList.add('flex');
-      lucide.createIcons();
-    }
+    <!-- Vista 3: Oráculo & Fuentes de Datos -->
+    <section id="view-oracle" class="view-panel hidden" role="tabpanel" aria-labelledby="tab-oracle">
+      <div class="panel-grid-2">
+        <article id="oracleHealthCard" class="surface-card oracle-info-card">
+          <div class="truth-card-head">
+            <h2>Estado del servidor</h2>
+            <span id="healthStatusText" class="badge">Consultando…</span>
+          </div>
+          <div class="kv-row">
+            <span class="kv-key">Tiempo activo</span>
+            <span id="healthUptimeText" class="kv-val tabular-nums">—</span>
+          </div>
+          <div class="kv-row">
+            <span class="kv-key">Endpoint</span>
+            <span class="kv-val">GET /health</span>
+          </div>
+        </article>
 
-    function closeModal() {
-      document.getElementById('modal').classList.add('hidden');
-      document.getElementById('modal').classList.remove('flex');
-    }
+        <article id="oracleLastRunCard" class="surface-card oracle-info-card">
+          <div class="truth-card-head">
+            <h2>Última ejecución del Oráculo</h2>
+            <span id="oracleLastStatus" class="badge">Sin registros</span>
+          </div>
+          <div class="kv-row">
+            <span class="kv-key">Fecha / hora</span>
+            <span id="oracleLastTimestamp" class="kv-val tabular-nums">—</span>
+          </div>
+          <p id="oracleLastDetails" class="visual-composition-tip">Aún no se ha disparado un ciclo en esta sesión.</p>
+          <div>
+            <button id="btnOracleTabRun" class="btn btn-primary btn-sm" type="button">Ejecutar ciclo del Oráculo ahora</button>
+          </div>
+        </article>
+      </div>
 
-    function copyToClipboard(elementId) {
-      const text = document.getElementById(elementId).innerText;
-      navigator.clipboard.writeText(text);
-      alert('¡Copiado al portapapeles!');
-    }
+      <div class="section-heading-bar">
+        <h2>Auditoría honesta de fuentes de datos</h2>
+      </div>
 
-    function downloadCSV() {
-      const headers = ['Día,Semana,Pilar,Formato,Título,Gancho,Guion,Prompt_Imagen,Caption,Estado'];
-      const rows = roadmapData.map(d => 
-        [d.day_number, d.week_number, `"${d.content_pillar}"`, `"${d.format}"`, `"${d.title}"`, `"${d.hook}"`, `"${d.script.replace(/\n/g, ' ')}"`, `"${d.image_prompt}"`, `"${d.caption.replace(/\n/g, ' ')}"`, `"${d.status}"`].join(',')
-      );
-      const blob = new Blob([headers.concat(rows).join('\n')], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `roadmap_instagram_30_dias.csv`;
-      a.click();
-    }
+      <div id="dataTruthGrid" class="truth-grid">
+        <article id="truthCard-youtube" class="surface-card truth-card">
+          <div class="truth-card-head">
+            <h3>YouTube Data API v3</h3>
+            <span class="badge badge--live">Real · Conectado</span>
+          </div>
+          <p>Consulta real a <code>youtube.search.list</code> con <code>part: ['snippet']</code> para obtener títulos, canales y miniaturas. No consulta métricas de vistas ni likes; si falla o falta clave, usa 3 items de respaldo.</p>
+        </article>
 
-    function downloadJSON() {
-      const blob = new Blob([JSON.stringify(roadmapData, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `roadmap_instagram_30_dias.json`;
-      a.click();
-    }
+        <article id="truthCard-gemini" class="surface-card truth-card">
+          <div class="truth-card-head">
+            <h3>Gemini AI (<code>@google/genai</code>)</h3>
+            <span class="badge badge--live">Real · Vía Oráculo</span>
+          </div>
+          <p>Genera los 30 días con IA cuando se ejecuta <code>POST /api/oracle/run-now</code> o el cron mensual (<code>0 0 1 * *</code>). La generación rápida de <code>/api/roadmap/generate</code> usa plantillas + temas reales de YouTube.</p>
+        </article>
 
-    function generateFallbackRoadmap(niche = 'Inteligencia Artificial y Productividad') {
-      const items = [];
-      const pillars = ['Educativo', 'Entretenimiento', 'Autoridad', 'Educativo', 'Comunidad', 'Autoridad', 'Venta', 'Educativo'];
-      const formats = ['Reel', 'Reel', 'Carrusel', 'Reel', 'Story', 'Reel', 'Carrusel', 'Reel'];
-      
-      for (let day = 1; day <= 30; day++) {
-        const week = Math.min(Math.ceil(day / 7), 4);
-        const pIdx = (day - 1) % pillars.length;
-        items.push({
-          day_number: day,
-          week_number: week,
-          content_pillar: pillars[pIdx],
-          format: formats[pIdx],
-          title: `Día ${day}: Estrategia en ${niche} #${day}`,
-          hook: `Si aplicas esta regla de 3 minutos todos los días en ${niche}, tus resultados se van a multiplicar (Día ${day}).`,
-          script: `[0:00 - 0:03] GANCHO EN PANTALLA: "El 99% ignora este detalle en ${niche} y pierde semanas enteras."\n[0:03 - 0:15] PASO A PASO: Paso 1: Identifica el cuello de botella. Paso 2: Aplica la automatización que te muestro. Paso 3: Mide tu avance cada 7 días.\n[0:15 - 0:25] LECCIÓN: No se trata de trabajar más duro, sino con un método claro y probado.\n[0:25 - 0:30] LLAMADA A LA ACCIÓN: Comenta "PLANTILLA" para recibir los recursos en tu bandeja de entrada.`,
-          image_prompt: `Cinematic Instagram cover visual for Day ${day} focusing on "${niche}". High contrast moody lighting, cyberpunk neon purple and emerald accents, ultra photorealistic, 8k resolution, minimalist typographic balance, 9:16 vertical ratio.`,
-          caption: `La consistencia no es hacer 100 cosas a la vez en ${niche}, es hacer 1 sola cosa bien todos los días. 🚀\n\n📌 Guarda este contenido para revisarlo cuando estés grabando tus videos.\n\n👇 ¿Cuál es tu formato favorito en Instagram actualmente?`,
-          status: 'pendiente'
-        });
-      }
-      return items;
-    }
+        <article id="truthCard-supabase" class="surface-card truth-card">
+          <div class="truth-card-head">
+            <h3>Supabase PostgreSQL</h3>
+            <span class="badge badge--live">Real · Persistencia</span>
+          </div>
+          <p>Almacena el historial de búsquedas, catálogo de videos y las 30 piezas del roadmap (con respaldo automático en memoria si las credenciales no están activas).</p>
+        </article>
 
-    document.addEventListener('DOMContentLoaded', async () => {
-      await fetchRoadmap();
-      renderCards();
-    });
-  </script>
+        <article id="truthCard-instagram" class="surface-card truth-card">
+          <div class="truth-card-head">
+            <h3>Instagram Intelligence</h3>
+            <span class="badge badge--simulated">Simulado · Plantilla</span>
+          </div>
+          <p>El módulo <code>src/services/instagram.service.ts</code> no realiza scraping ni llama a Meta Graph API. Genera patrones y ganchos de plantilla basados en el nicho para orientar el prompt de Gemini.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
 </body>
 </html>
