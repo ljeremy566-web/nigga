@@ -11,6 +11,8 @@ export interface OracleExecutionReport {
   niche: string;
   instagramAccount: string;
   youtubeVideosFound: number;
+  strongTrendsCount?: number;
+  strongTrends?: { videoId: string; title: string; viewCount: number; viewsPerHour: number; reason?: string }[];
   roadmapDaysGenerated: number;
   status: 'completado' | 'error' | 'en_proceso';
   details?: string;
@@ -58,22 +60,33 @@ export class OracleOrchestratorService {
       niche,
       instagramAccount,
       youtubeVideosFound: 0,
+      strongTrendsCount: 0,
+      strongTrends: [],
       roadmapDaysGenerated: 0,
       status: 'en_proceso',
     };
 
     try {
-      // 1. Paso YouTube: Buscar tendencias y videos virales
-      console.log(`📡 [Paso 1/4] Buscando tendencias y videos virales en YouTube...`);
-      const ytVideos: YouTubeVideoItem[] = await this.youtubeService.searchVideos(niche, 6, true);
+      // 1. Paso YouTube: Buscar tendencias frescas y detectar picos virales recientes
+      console.log(`📡 [Paso 1/4] Rastreando tendencias frescas y métricas reales en YouTube...`);
+      const ytVideos: YouTubeVideoItem[] = await this.youtubeService.searchFreshTrends(niche, 10, true);
+      const strong = ytVideos.filter((v) => v.isStrongTrend);
       report.youtubeVideosFound = ytVideos.length;
+      report.strongTrendsCount = strong.length;
+      report.strongTrends = strong.slice(0, 5).map((v) => ({
+        videoId: v.videoId,
+        title: v.title,
+        viewCount: v.viewCount || 0,
+        viewsPerHour: v.viewsPerHour || 0,
+        reason: v.trendReason,
+      }));
 
-      // 2. Paso Instagram: Extraer ideas, ganchos y formatos de la cuenta de referencia
+      // 2. Paso Instagram: Extraer ideas, ganchos y formatos de la cuenta de referencia (simulado por ahora)
       console.log(`📸 [Paso 2/4] Analizando perfil de Instagram de referencia: ${instagramAccount}...`);
       const igAnalysis: InstagramProfileAnalysis = await this.instagramService.analyzeAccount(instagramAccount, niche);
 
-      // 3. Paso IA: Generar el Roadmap de 30 Días con Gemini
-      console.log(`🤖 [Paso 3/4] Enviando inteligencia de mercado a Gemini AI...`);
+      // 3. Paso IA: Generar el Roadmap de 30 Días con Gemini (multi-enfoque en tendencias fuertes)
+      console.log(`🤖 [Paso 3/4] Enviando inteligencia de mercado (${strong.length} tendencias fuertes) a Gemini AI...`);
       const roadmapItems: RoadmapDayItem[] = await this.geminiService.generateMonthlyRoadmapWithAI(niche, ytVideos, igAnalysis);
       report.roadmapDaysGenerated = roadmapItems.length;
 
@@ -82,7 +95,7 @@ export class OracleOrchestratorService {
       await this.roadmapService.saveRoadmap(roadmapItems, niche);
 
       report.status = 'completado';
-      report.details = `Se generaron exitosamente 30 contenidos para "${niche}" analizando ${ytVideos.length} videos de YouTube y el perfil ${instagramAccount}.`;
+      report.details = `Se generaron ${roadmapItems.length} contenidos para "${niche}" analizando ${ytVideos.length} videos recientes de YouTube (${strong.length} tendencias fuertes explotadas con múltiples enfoques) y referencia ${instagramAccount}.`;
       console.log(`🎯 [Oracle Autonomous Engine] ¡Ciclo completado con éxito!`);
     } catch (err: any) {
       report.status = 'error';
