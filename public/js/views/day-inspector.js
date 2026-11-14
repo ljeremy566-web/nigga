@@ -1,0 +1,236 @@
+import {
+  dom,
+  state,
+  getEffectiveDayItem,
+  getFilteredRoadmap,
+} from '../state.js';
+import {
+  escapeHtml,
+  formatStatusLabel,
+  isDesktop,
+  padDay,
+  prefersReducedMotion,
+} from '../utils.js';
+
+function getFocusableInspectorElements() {
+  if (!dom.dayInspector) return [];
+  return Array.from(
+    dom.dayInspector.querySelectorAll(
+      'button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])'
+    )
+  ).filter((el) => {
+    if (el.closest('.hidden')) return false;
+    const cs = window.getComputedStyle(el);
+    return cs.display !== 'none' && cs.visibility !== 'hidden';
+  });
+}
+
+function handleMobileInspectorKeydown(e) {
+  if (!state.isDrawerOpen || isDesktop() || !dom.dayInspector) return;
+  if (e.key !== 'Tab') return;
+
+  const focusables = getFocusableInspectorElements();
+  if (focusables.length === 0) {
+    e.preventDefault();
+    return;
+  }
+
+  const first = focusables[0];
+  const last = focusables[focusables.length - 1];
+  const active = document.activeElement;
+
+  if (e.shiftKey) {
+    if (active === first || !dom.dayInspector.contains(active)) {
+      e.preventDefault();
+      last.focus();
+    }
+  } else if (active === last || !dom.dayInspector.contains(active)) {
+    e.preventDefault();
+    first.focus();
+  }
+}
+
+export function updatePrevNextButtons() {
+  if (!dom.btnPrevDay || !dom.btnNextDay) return;
+  const filtered = getFilteredRoadmap();
+  const list = filtered.length > 0 ? filtered : state.roadmap;
+  if (list.length === 0) {
+    dom.btnPrevDay.disabled = true;
+    dom.btnNextDay.disabled = true;
+    return;
+  }
+  const idx = list.findIndex((d) => d.day_number === state.selectedDay);
+  dom.btnPrevDay.disabled = idx <= 0;
+  dom.btnNextDay.disabled = idx === -1 || idx >= list.length - 1;
+}
+
+export function updateInspectorStatusButtons(activeStatus) {
+  if (!dom.inspectorStatusGroup) return;
+  dom.inspectorStatusGroup.querySelectorAll('.status-btn').forEach((btn) => {
+    const btnStatus = btn.getAttribute('data-status');
+    const isActive = btnStatus === activeStatus;
+    btn.classList.toggle('is-active', isActive);
+    btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    btn.textContent = formatStatusLabel(btnStatus);
+  });
+}
+
+export function renderInspectorNow(rawItem) {
+  if (!dom.inspectorTitle) return;
+  if (!rawItem) {
+    dom.inspectorTitle.textContent = 'Sin datos de roadmap';
+    updatePrevNextButtons();
+    return;
+  }
+
+  const item = getEffectiveDayItem(rawItem);
+
+  dom.inspectorDayBadge.textContent = `Día ${padDay(item.day_number)}`;
+  dom.inspectorWeekBadge.textContent = `Semana ${item.week_number}`;
+  dom.inspectorFormatBadge.textContent = item.format;
+  dom.inspectorPillarBadge.textContent = item.content_pillar;
+  dom.localDraftBadge.classList.toggle('hidden', !item.isEditedLocally);
+
+  updateInspectorStatusButtons(item.status);
+  updatePrevNextButtons();
+
+  dom.inspectorTitle.textContent = item.title;
+  dom.inspectorHook.textContent = item.hook;
+  dom.inspectorImagePrompt.textContent = item.image_prompt;
+  dom.inspectorScript.textContent = item.script;
+  dom.inspectorCaption.textContent = item.caption;
+
+  const isSquare = item.format === 'Carrusel';
+  const ratio = isSquare ? '1:1' : '9:16';
+  dom.visualAspectFrame.setAttribute('data-ratio', ratio);
+  dom.visualFrameDay.textContent = `Día ${padDay(item.day_number)}`;
+  dom.visualFrameFormat.textContent = item.format;
+  dom.visualRatioLabel.textContent = isSquare
+    ? 'Cuadrado 1:1 (1080×1080)'
+    : 'Vertical 9:16 (1080×1920)';
+  dom.visualCompositionTip.textContent = isSquare
+    ? 'Portada limpia con titular de 5–7 palabras en alto contraste, un único punto focal y margen uniforme.'
+    : 'Deja un 15% libre arriba y abajo para la interfaz de Reels/Stories y ubica el titular en el tercio superior.';
+
+  const matchedVideo = item.reference_video_id
+    ? state.youtubeStoredVideos.find((v) => v.videoId === item.reference_video_id)
+    : null;
+
+  if (matchedVideo && matchedVideo.thumbnailUrl) {
+    dom.visualRefThumb.src = matchedVideo.thumbnailUrl;
+    dom.visualRefThumb.classList.remove('hidden');
+  } else {
+    dom.visualRefThumb.removeAttribute('src');
+    dom.visualRefThumb.classList.add('hidden');
+  }
+
+  if (item.reference_video_id) {
+    dom.inspectorYoutubeRef.classList.remove('hidden');
+    if (item.reference_video_id.startsWith('demo_yt_')) {
+      dom.inspectorRefLink.textContent = `Referencia demo (${item.reference_video_id})`;
+      dom.inspectorRefLink.removeAttribute('href');
+    } else {
+      dom.inspectorRefLink.href = `https://www.youtube.com/watch?v=${encodeURIComponent(item.reference_video_id)}`;
+      dom.inspectorRefLink.setAttribute('target', '_blank');
+      dom.inspectorRefLink.setAttribute('rel', 'noopener noreferrer');
+      dom.inspectorRefLink.textContent = matchedVideo
+        ? `${matchedVideo.title} (${matchedVideo.channelTitle})`
+        : `Ver en YouTube (${item.reference_video_id})`;
+    }
+  } else {
+    dom.inspectorYoutubeRef.classList.add('hidden');
+  }
+
+  if (item.hashtags && item.hashtags.length > 0) {
+    dom.inspectorHashtags.innerHTML = item.hashtags
+      .map((tag) => `<span class="md-status-chip badge">${escapeHtml(tag)}</span>`)
+      .join('');
+  } else {
+    dom.inspectorHashtags.innerHTML = '';
+  }
+
+  dom.btnToggleEditMode.textContent = state.isEditingDraft ? 'Ver detalle' : 'Editar';
+  dom.draftEditorForm.classList.toggle('hidden', !state.isEditingDraft);
+  if (state.isEditingDraft) {
+    dom.editHookInput.value = item.hook;
+    dom.editPromptInput.value = item.image_prompt;
+    dom.editScriptInput.value = item.script;
+    dom.editCaptionInput.value = item.caption;
+    dom.btnResetDraft.disabled = !item.isEditedLocally;
+  }
+}
+
+export function syncResponsiveInspector() {
+  if (!dom.dayInspector || !dom.inspectorBackdrop) return;
+  if (isDesktop()) {
+    state.isDrawerOpen = false;
+    document.removeEventListener('keydown', handleMobileInspectorKeydown, true);
+    document.body.classList.remove('is-scroll-locked');
+    document.body.style.overflow = '';
+    dom.inspectorBackdrop.classList.add('hidden');
+    dom.inspectorBackdrop.setAttribute('aria-hidden', 'true');
+    dom.dayInspector.classList.remove('hidden', 'fade-out', 'fade-in');
+    dom.dayInspector.setAttribute('role', 'region');
+    dom.dayInspector.removeAttribute('aria-modal');
+    dom.dayInspector.setAttribute('aria-hidden', 'false');
+  } else if (!state.isDrawerOpen) {
+    document.removeEventListener('keydown', handleMobileInspectorKeydown, true);
+    document.body.classList.remove('is-scroll-locked');
+    document.body.style.overflow = '';
+    dom.inspectorBackdrop.classList.add('hidden');
+    dom.inspectorBackdrop.setAttribute('aria-hidden', 'true');
+    dom.dayInspector.classList.add('hidden');
+    dom.dayInspector.setAttribute('role', 'dialog');
+    dom.dayInspector.setAttribute('aria-modal', 'true');
+    dom.dayInspector.setAttribute('aria-hidden', 'true');
+  }
+}
+
+export function openMobileInspector(triggerEl) {
+  if (isDesktop() || !dom.dayInspector || !dom.inspectorBackdrop) return;
+  state.isDrawerOpen = true;
+  state.lastDrawerTrigger = triggerEl || document.getElementById(`day-card-${state.selectedDay}`);
+
+  document.body.classList.add('is-scroll-locked');
+  document.body.style.overflow = 'hidden';
+
+  dom.inspectorBackdrop.classList.remove('hidden');
+  dom.inspectorBackdrop.setAttribute('aria-hidden', 'false');
+
+  dom.dayInspector.classList.remove('hidden', 'fade-out');
+  dom.dayInspector.setAttribute('role', 'dialog');
+  dom.dayInspector.setAttribute('aria-modal', 'true');
+  dom.dayInspector.setAttribute('aria-hidden', 'false');
+
+  if (!prefersReducedMotion()) {
+    dom.dayInspector.classList.add('fade-in');
+  }
+
+  document.addEventListener('keydown', handleMobileInspectorKeydown, true);
+  dom.btnCloseDrawer?.focus();
+}
+
+export function closeMobileInspector({ restoreFocus = true } = {}) {
+  if (!state.isDrawerOpen) return;
+  state.isDrawerOpen = false;
+  document.removeEventListener('keydown', handleMobileInspectorKeydown, true);
+  document.body.classList.remove('is-scroll-locked');
+  document.body.style.overflow = '';
+
+  if (dom.inspectorBackdrop) {
+    dom.inspectorBackdrop.classList.add('hidden');
+    dom.inspectorBackdrop.setAttribute('aria-hidden', 'true');
+  }
+  if (dom.dayInspector && !isDesktop()) {
+    dom.dayInspector.classList.add('hidden');
+    dom.dayInspector.classList.remove('fade-in', 'fade-out');
+    dom.dayInspector.setAttribute('aria-hidden', 'true');
+  }
+
+  if (restoreFocus) {
+    const targetCard =
+      document.getElementById(`day-card-${state.selectedDay}`) || state.lastDrawerTrigger;
+    targetCard?.focus?.();
+  }
+  state.lastDrawerTrigger = null;
+}
