@@ -58,7 +58,7 @@ sudo systemctl restart youtube-instagram-oracle.service
 # 6. Abrir puerto 3000 en iptables (Oracle Ubuntu bloquea puertos extras por defecto)
 if command -v iptables &> /dev/null; then
     if ! sudo iptables -C INPUT -p tcp --dport 3000 -j ACCEPT 2>/dev/null; then
-        sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 3000 -j ACCEPT || true
+        sudo iptables -I INPUT 1 -p tcp --dport 3000 -j ACCEPT || true
         sudo netfilter-persistent save 2>/dev/null || true
     fi
 fi
