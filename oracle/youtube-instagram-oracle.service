@@ -6,10 +6,11 @@ After=network.target
 Type=simple
 User=ubuntu
 WorkingDirectory=/home/ubuntu/youtube-supabase-api
-ExecStart=/usr/bin/npm run start
+ExecStart=/usr/bin/node /home/ubuntu/youtube-supabase-api/dist/index.js
 Restart=always
 RestartSec=10
 Environment=NODE_ENV=production
+Environment=NODE_OPTIONS=--max-old-space-size=1024
 EnvironmentFile=/home/ubuntu/youtube-supabase-api/.env.local
 
 [Install]

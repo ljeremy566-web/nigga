@@ -37,10 +37,11 @@ mkdir -p "$APP_DIR"
 
 echo "📂 Directorio de la app: $APP_DIR"
 
-# 4. Instalar dependencias y compilar
+# 4. Instalar dependencias y compilar (con límite de heap ampliado gracias al swap para VMs de 1 GB RAM)
 cd "$APP_DIR"
 if [ -f "package.json" ]; then
-    npm install
+    export NODE_OPTIONS="--max-old-space-size=1536"
+    npm install --no-audit --no-fund
     npm run build
 fi
 
