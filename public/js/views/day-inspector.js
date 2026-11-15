@@ -105,6 +105,9 @@ export function renderInspectorNow(rawItem) {
   dom.visualAspectFrame.setAttribute('data-ratio', ratio);
   dom.visualFrameDay.textContent = `Día ${padDay(item.day_number)}`;
   dom.visualFrameFormat.textContent = item.format;
+  if (dom.visualFrameHookPreview) {
+    dom.visualFrameHookPreview.textContent = item.hook || item.title;
+  }
   dom.visualRatioLabel.textContent = isSquare
     ? 'Cuadrado 1:1 (1080×1080)'
     : 'Vertical 9:16 (1080×1920)';
@@ -117,9 +120,14 @@ export function renderInspectorNow(rawItem) {
     : null;
 
   if (matchedVideo && matchedVideo.thumbnailUrl) {
+    dom.visualRefThumb.onerror = () => {
+      dom.visualRefThumb.classList.add('hidden');
+      dom.visualRefThumb.removeAttribute('src');
+    };
     dom.visualRefThumb.src = matchedVideo.thumbnailUrl;
     dom.visualRefThumb.classList.remove('hidden');
   } else {
+    dom.visualRefThumb.onerror = null;
     dom.visualRefThumb.removeAttribute('src');
     dom.visualRefThumb.classList.add('hidden');
   }
@@ -143,7 +151,7 @@ export function renderInspectorNow(rawItem) {
 
   if (item.hashtags && item.hashtags.length > 0) {
     dom.inspectorHashtags.innerHTML = item.hashtags
-      .map((tag) => `<span class="md-status-chip badge">${escapeHtml(tag)}</span>`)
+      .map((tag) => `<span class="md-status-chip md-status-chip--plain badge">${escapeHtml(tag)}</span>`)
       .join('');
   } else {
     dom.inspectorHashtags.innerHTML = '';

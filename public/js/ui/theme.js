@@ -54,17 +54,6 @@ export function toggleTheme() {
 
 export function initTheme() {
   const stored = readStoredTheme();
-  const initial = stored || getSystemTheme();
+  const initial = stored || 'light';
   applyTheme(initial, { persist: false });
-
-  if (typeof window !== 'undefined' && window.matchMedia) {
-    const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    if (typeof mq.addEventListener === 'function') {
-      mq.addEventListener('change', (e) => {
-        if (!readStoredTheme()) {
-          applyTheme(e.matches ? 'dark' : 'light', { persist: false });
-        }
-      });
-    }
-  }
 }

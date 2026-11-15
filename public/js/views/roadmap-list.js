@@ -120,7 +120,7 @@ export function renderRoadmapList() {
         const isSelected = item.day_number === state.selectedDay;
         const statusLabel = formatStatusLabel(item.status);
         const draftTag = item.isEditedLocally
-          ? '<span class="md-status-chip md-status-chip--editado badge badge--editado">Borrador</span>'
+          ? '<span class="day-card-draft-dot">· Editado</span>'
           : '';
         htmlParts.push(`
           <button
@@ -131,21 +131,22 @@ export function renderRoadmapList() {
             type="button"
           >
             <div class="day-card-top">
-              <span class="md-status-chip md-status-chip--dark badge badge--obsidian tabular-nums">Día ${padDay(item.day_number)}</span>
-              <div class="day-card-badges">
+              <div class="day-card-index-group">
+                <span class="day-card-num tabular-nums">${padDay(item.day_number)}</span>
+                <span class="day-card-format">${escapeHtml(item.format)}</span>
                 ${draftTag}
+              </div>
+              <div class="day-card-badges">
                 <span class="md-status-chip md-status-chip--${escapeHtml(item.status)} badge badge--${escapeHtml(item.status)}" data-card-status="${item.day_number}">${escapeHtml(statusLabel)}</span>
-                <span class="md-status-chip badge">${escapeHtml(item.format)}</span>
               </div>
             </div>
             <div class="day-card-main">
-              <div class="day-card-pillar">${escapeHtml(item.content_pillar)}</div>
               <h3 class="day-card-title">${escapeHtml(item.title)}</h3>
               <p class="day-card-hook">${escapeHtml(item.hook)}</p>
             </div>
             <div class="day-card-foot">
-              <span>Semana ${item.week_number}</span>
-              <span class="day-card-cta">Ver guion e imagen →</span>
+              <span class="day-card-pillar">${escapeHtml(item.content_pillar)}</span>
+              <span class="day-card-cta">Ver guion →</span>
             </div>
           </button>
         `);

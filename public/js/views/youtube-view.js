@@ -16,7 +16,7 @@ export function renderYoutubeHistory() {
       <button class="history-chip md-state-layer" type="button" data-history-query="${escapeHtml(h.query)}">
         <span class="material-symbols-rounded icon-sm" aria-hidden="true">history</span>
         <span>${escapeHtml(h.query)}</span>
-        <span class="md-status-chip badge tabular-nums">${Number(h.results_count) || 0}</span>
+        <span class="md-status-chip md-status-chip--plain badge tabular-nums">${Number(h.results_count) || 0}</span>
       </button>
     `
     )

@@ -59,7 +59,7 @@ export function cacheDom() {
     'inspectorBackdrop', 'dayInspector', 'dayInspectorContent',
     'inspectorDayBadge', 'inspectorWeekBadge', 'inspectorFormatBadge', 'inspectorPillarBadge', 'localDraftBadge',
     'btnPrevDay', 'btnNextDay', 'btnToggleEditMode', 'btnCloseDrawer', 'inspectorStatusGroup',
-    'inspectorTitle', 'inspectorHook', 'visualAspectFrame', 'visualFrameDay', 'visualFrameFormat',
+    'inspectorTitle', 'inspectorHook', 'visualAspectFrame', 'visualFrameDay', 'visualFrameFormat', 'visualFrameHookPreview',
     'visualRatioLabel', 'visualRefThumb', 'visualCompositionTip',
     'inspectorImagePrompt', 'inspectorScript', 'inspectorCaption', 'inspectorHashtags',
     'inspectorYoutubeRef', 'inspectorRefLink',
