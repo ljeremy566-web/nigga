@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Content Studio — Planificación Editorial de 30 Días</title>
-  <meta name="description" content="Estudio editorial interactivo de 30 días para Instagram con diseño minimalista blanco, impulsado por YouTube Data API v3, Gemini AI y Supabase.">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23111111'%3E%3Crect x='3' y='3' width='18' height='18' rx='4'/%3E%3Cpath d='M8 8h8v2H8zm0 4h8v2H8zm0 4h5v2H8z' fill='%23ffffff'/%3E%3C/svg%3E">
+  <title>Content Studio — Tu contenido, con dirección</title>
+  <meta name="description" content="De una idea a 30 días de contenido. Estudio editorial interactivo impulsado por YouTube Data API v3, Gemini AI y Supabase.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23443370'%3E%3Crect x='3' y='3' width='18' height='18' rx='5' fill='%23F1ECF9'/%3E%3Ctext x='12' y='16.5' text-anchor='middle' font-size='13' font-weight='700' fill='%23443370' font-family='sans-serif'%3E2%3C/text%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@6..144,300..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles/tokens.css">
   <link rel="stylesheet" href="/styles/base.css">
   <link rel="stylesheet" href="/styles/shell.css">
@@ -35,504 +35,603 @@
 <body class="app-shell">
   <a class="sr-only sr-only--focusable" href="#mainContent">Saltar al contenido principal</a>
 
-  <!-- Single Sticky Editorial Masthead -->
-  <header class="app-topbar app-header">
-    <div class="app-topbar__inner">
+  <!-- Left Fixed Navigation Rail -->
+  <aside class="app-sidebar" aria-label="Navegación del estudio">
+    <div class="app-sidebar__top">
       <div class="app-brand">
-        <div class="app-brand__mark" aria-hidden="true">
-          <span class="material-symbols-rounded icon-sm">calendar_view_month</span>
-        </div>
+        <div class="app-brand__mark" aria-hidden="true">2</div>
         <div class="app-brand__text">
-          <span class="app-brand__title">Content Studio</span>
-          <span class="app-brand__edition">30D · EDITORIAL</span>
+          <span class="app-brand__title">Content</span>
+          <span class="app-brand__sub">Studio</span>
         </div>
       </div>
 
-      <nav class="app-nav" role="tablist" aria-label="Vistas principales">
-        <div class="app-nav__items">
-          <button id="tab-roadmap" class="app-nav__item tab-btn is-active" role="tab" aria-selected="true" aria-controls="view-roadmap" data-tab="roadmap" type="button">
-            <span class="app-nav__indicator">
-              <span class="material-symbols-rounded icon-sm" aria-hidden="true">calendar_month</span>
-            </span>
-            <span class="app-nav__label">Roadmap 30 Días</span>
-          </button>
-          <button id="tab-youtube" class="app-nav__item tab-btn" role="tab" aria-selected="false" aria-controls="view-youtube" data-tab="youtube" type="button">
-            <span class="app-nav__indicator">
-              <span class="material-symbols-rounded icon-sm" aria-hidden="true">video_library</span>
-            </span>
-            <span class="app-nav__label">YouTube Research</span>
-          </button>
-          <button id="tab-oracle" class="app-nav__item tab-btn" role="tab" aria-selected="false" aria-controls="view-oracle" data-tab="oracle" type="button">
-            <span class="app-nav__indicator">
-              <span class="material-symbols-rounded icon-sm" aria-hidden="true">psychology</span>
-            </span>
-            <span class="app-nav__label">Oráculo &amp; Fuentes</span>
-          </button>
-        </div>
-      </nav>
+      <div class="sidebar-nav-section">
+        <span class="sidebar-section-label">Espacio de trabajo</span>
+        <nav class="app-nav" role="tablist" aria-label="Vistas principales">
+          <div class="app-nav__items">
+            <button id="tab-roadmap" class="app-nav__item tab-btn is-active" role="tab" aria-selected="true" aria-controls="view-roadmap" data-tab="roadmap" type="button">
+              <span class="app-nav__indicator">
+                <span class="material-symbols-rounded icon-sm" aria-hidden="true">calendar_month</span>
+              </span>
+              <span class="app-nav__label">Mi roadmap</span>
+            </button>
+            <button id="tab-youtube" class="app-nav__item tab-btn" role="tab" aria-selected="false" aria-controls="view-youtube" data-tab="youtube" type="button">
+              <span class="app-nav__indicator">
+                <span class="material-symbols-rounded icon-sm" aria-hidden="true">video_library</span>
+              </span>
+              <span class="app-nav__label">YouTube Research</span>
+            </button>
+            <button id="tab-oracle" class="app-nav__item tab-btn" role="tab" aria-selected="false" aria-controls="view-oracle" data-tab="oracle" type="button">
+              <span class="app-nav__indicator">
+                <span class="material-symbols-rounded icon-sm" aria-hidden="true">auto_awesome</span>
+              </span>
+              <span class="app-nav__label">Oráculo IA</span>
+            </button>
+            <button id="btnSidebarMyContents" class="app-nav__item" type="button" title="Filtrar piezas grabadas, editadas o publicadas">
+              <span class="app-nav__indicator">
+                <span class="material-symbols-rounded icon-sm" aria-hidden="true">view_agenda</span>
+              </span>
+              <span class="app-nav__label">Mis contenidos</span>
+            </button>
+          </div>
+        </nav>
+      </div>
+    </div>
 
-      <div class="app-topbar__actions">
-        <div class="app-topbar__status">
-          <span id="statusHealthBadge" class="md-status-chip badge">Conectando…</span>
-          <span id="statusOracleBadge" class="md-status-chip badge">Oráculo listo</span>
-          <span id="statusSourceBadge" class="md-status-chip md-status-chip--simulated badge badge--simulated" title="YouTube Data API v3, Gemini AI y Supabase son reales; el análisis de Instagram usa plantilla simulada">YT Real · IG Sim</span>
-        </div>
+    <div class="app-sidebar__bottom">
+      <div class="sidebar-promo-card">
+        <span class="sidebar-promo-title">Una idea cada día.</span>
+        <p class="sidebar-promo-copy">La constancia empieza con un buen plan.</p>
+        <button id="btnExploreIdeas" class="sidebar-promo-link" type="button">
+          <span>Explorar ideas</span>
+          <span class="material-symbols-rounded icon-sm" aria-hidden="true">open_in_new</span>
+        </button>
+      </div>
 
-        <button id="btnThemeToggle" class="md-icon-btn" type="button" aria-label="Cambiar entre tema claro y oscuro" title="Cambiar tema">
-          <span id="themeToggleIcon" class="material-symbols-rounded icon-sm" aria-hidden="true">dark_mode</span>
+      <div class="sidebar-footer-links">
+        <button id="btnSidebarHelp" class="sidebar-footer-btn" type="button">
+          <span class="material-symbols-rounded icon-sm" aria-hidden="true">psychology</span>
+          <span>Ayuda</span>
+        </button>
+        <button id="btnSidebarSettings" class="sidebar-footer-btn" type="button">
+          <span class="material-symbols-rounded icon-sm" aria-hidden="true">light_mode</span>
+          <span>Configuración</span>
         </button>
       </div>
     </div>
-  </header>
+  </aside>
 
-  <main id="mainContent" class="app-main">
-    <!-- Vista 1: Roadmap Interactivo de 30 Días -->
-    <section id="view-roadmap" class="view-panel fade-in" role="tabpanel" aria-labelledby="tab-roadmap">
-      <!-- Editorial Hero & Studio Controls -->
-      <div class="studio-hero">
-        <div class="studio-hero__top">
+  <!-- Main Workspace Column -->
+  <div class="app-workspace">
+    <header class="app-topbar app-header">
+      <div class="app-topbar__inner">
+        <div class="app-breadcrumb">
+          <span>Mi espacio</span>
+          <span>/</span>
+          <span id="breadcrumbCurrent" class="app-breadcrumb__current">Roadmap de contenido</span>
+        </div>
+
+        <div class="app-topbar__actions">
+          <div class="app-topbar__status">
+            <span id="statusHealthBadge" class="md-status-chip badge">Conectando…</span>
+            <span id="statusOracleBadge" class="md-status-chip badge">Oráculo listo</span>
+            <span id="statusSourceBadge" class="md-status-chip md-status-chip--simulated badge badge--simulated" title="YouTube Data API v3, Gemini AI y Supabase son reales; Instagram usa plantilla simulada">YT Real · IG Sim</span>
+          </div>
+
+          <button id="btnExportCsv" class="md-btn md-btn--text md-btn--sm" type="button" title="Exportar CSV">
+            <span class="material-symbols-rounded icon-sm" aria-hidden="true">table_view</span>
+            <span>CSV</span>
+          </button>
+          <button id="btnExportJson" class="md-btn md-btn--text md-btn--sm" type="button" title="Exportar JSON">
+            <span class="material-symbols-rounded icon-sm" aria-hidden="true">data_object</span>
+            <span>JSON</span>
+          </button>
+          <button id="btnThemeToggle" class="md-icon-btn md-icon-btn--sm" type="button" aria-label="Cambiar entre tema claro y oscuro" title="Cambiar tema">
+            <span id="themeToggleIcon" class="material-symbols-rounded icon-sm" aria-hidden="true">dark_mode</span>
+          </button>
+          <span class="welcome-pill">Bienvenida</span>
+        </div>
+      </div>
+    </header>
+
+    <main id="mainContent" class="app-main">
+      <!-- Vista 1: Mi roadmap -->
+      <section id="view-roadmap" class="view-panel fade-in" role="tabpanel" aria-labelledby="tab-roadmap">
+        <!-- Centered Hero Prompt Box -->
+        <div class="studio-hero">
           <div class="studio-hero__heading">
-            <span class="studio-kicker">SISTEMA DE PRODUCCIÓN EDITORIAL · INSTAGRAM</span>
-            <h1 class="studio-display-title">Roadmap interactivo de 30 días</h1>
+            <h1 class="studio-display-title">Tu contenido, con dirección.</h1>
+            <p class="studio-hero__subtitle">De una idea a 30 días de contenido. Un paso a la vez.</p>
           </div>
 
-          <div class="studio-hero__exports">
-            <button id="btnExportCsv" class="md-btn md-btn--text md-btn--sm" type="button" title="Exportar a CSV (UTF-8 BOM)">
-              <span class="material-symbols-rounded icon-sm" aria-hidden="true">table_view</span>
-              <span>Exportar CSV</span>
-            </button>
-            <button id="btnExportJson" class="md-btn md-btn--text md-btn--sm" type="button" title="Exportar a JSON">
-              <span class="material-symbols-rounded icon-sm" aria-hidden="true">data_object</span>
-              <span>JSON</span>
-            </button>
-          </div>
-        </div>
+          <div class="hero-prompt-card">
+            <div>
+              <label class="hero-prompt__label" for="nicheInput">¿Sobre qué quieres crear?</label>
+              <div class="hero-prompt__input-row">
+                <input id="nicheInput" class="hero-niche-input" type="text" value="Inteligencia Artificial y Productividad" placeholder="Ej. Inteligencia Artificial y Productividad">
+                <button id="btnLoadRoadmap" class="btn-hero-secondary" type="button" title="Cargar roadmap guardado para este nicho">
+                  <span class="material-symbols-rounded icon-sm" aria-hidden="true">sync</span>
+                  <span>Cargar</span>
+                </button>
+              </div>
+            </div>
 
-        <div class="command-bar">
-          <div class="field-group">
-            <label class="field-label" for="nicheInput">Nicho o temática</label>
-            <input id="nicheInput" class="input" type="text" value="Inteligencia Artificial y Productividad" placeholder="Ej. Inteligencia Artificial y Productividad">
-          </div>
+            <div class="hero-prompt__footer">
+              <div class="hero-ig-wrap">
+                <label class="hero-ig-label" for="igAccountInput">Referencia de Instagram</label>
+                <input id="igAccountInput" class="hero-ig-pill" type="text" value="@creatorshub" placeholder="@cuenta">
+                <span class="hero-optional-tag">Opcional</span>
+              </div>
 
-          <div class="field-group">
-            <label class="field-label" for="igAccountInput">
-              <span>Referencia Instagram</span>
-              <span class="field-hint">Tono simulado</span>
-            </label>
-            <input id="igAccountInput" class="input" type="text" value="@creatorshub" placeholder="@cuenta">
-          </div>
-
-          <div class="command-actions">
-            <button id="btnLoadRoadmap" class="md-btn md-btn--outlined" type="button">
-              <span class="material-symbols-rounded icon-sm" aria-hidden="true">sync</span>
-              <span>Cargar</span>
-            </button>
-            <button id="btnGenerateRoadmap" class="md-btn md-btn--filled" type="button">
-              <span class="material-symbols-rounded icon-sm" aria-hidden="true">auto_awesome</span>
-              <span>Generar 30 días</span>
-            </button>
-            <button id="btnRunOracle" class="md-btn md-btn--tonal" type="button">
-              <span class="material-symbols-rounded icon-sm" aria-hidden="true">psychology</span>
-              <span>Ejecutar Oráculo IA</span>
-            </button>
+              <div class="hero-prompt__actions">
+                <button id="btnRunOracle" class="btn-hero-secondary" type="button" title="Buscar tendencias en YouTube y regenerar con Oráculo IA">
+                  <span class="material-symbols-rounded icon-sm" aria-hidden="true">psychology</span>
+                  <span>Oráculo IA</span>
+                </button>
+                <button id="btnGenerateRoadmap" class="btn-hero-primary" type="button">
+                  <span class="material-symbols-rounded icon-sm" aria-hidden="true">auto_awesome</span>
+                  <span>Generar 30 días</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Indicador de progreso lineal -->
-      <div id="roadmapLinearProgress" class="md-linear-progress hidden" role="progressbar" aria-label="Cargando datos del roadmap">
-        <div class="md-linear-progress__bar"></div>
-      </div>
+        <div id="roadmapLinearProgress" class="md-linear-progress hidden" role="progressbar" aria-label="Cargando datos del roadmap">
+          <div class="md-linear-progress__bar"></div>
+        </div>
 
-      <div id="roadmapSourceNotice" class="source-notice md-banner hidden" role="status"></div>
+        <div id="roadmapSourceNotice" class="source-notice md-banner hidden" role="status"></div>
 
-      <!-- Progreso y Filtros por Hairline -->
-      <div class="controls-bar">
-        <div class="progress-row">
-          <div class="progress-meta">
-            <span id="progressSummaryText" class="progress-label tabular-nums">0 / 30 publicados · 0%</span>
+        <!-- 30-Day Progress + Quick-Jump Number Dots Strip -->
+        <div class="plan-overview-strip">
+          <div class="plan-progress-block">
+            <span class="plan-kicker">Tu plan de 30 días</span>
+            <span id="progressSummaryText" class="progress-label tabular-nums">0 de 30 publicados</span>
             <div class="progress-track" aria-hidden="true">
               <div id="progressFill" class="progress-fill"></div>
             </div>
+            <span id="planProgressSub" class="plan-progress-sub">Todo empieza con el día 1.</span>
+            <!-- Hidden counter bindings preserved for live state consistency -->
+            <span class="sr-only">
+              <strong id="countTotal">0</strong>
+              <strong id="countPendiente">0</strong>
+              <strong id="countGrabado">0</strong>
+              <strong id="countEditado">0</strong>
+              <strong id="countPublicado">0</strong>
+            </span>
           </div>
 
-          <div class="status-counters">
-            <span class="counter-pill">Total <strong id="countTotal" class="tabular-nums">0</strong></span>
-            <span class="counter-pill"><span class="counter-dot counter-dot--pendiente"></span>Pendiente <strong id="countPendiente" class="tabular-nums">0</strong></span>
-            <span class="counter-pill"><span class="counter-dot counter-dot--grabado"></span>Grabado <strong id="countGrabado" class="tabular-nums">0</strong></span>
-            <span class="counter-pill"><span class="counter-dot counter-dot--editado"></span>Editado <strong id="countEditado" class="tabular-nums">0</strong></span>
-            <span class="counter-pill"><span class="counter-dot counter-dot--publicado"></span>Publicado <strong id="countPublicado" class="tabular-nums">0</strong></span>
-          </div>
+          <div id="dayDotsStrip" class="day-dots-strip" aria-label="Selector rápido de los 30 días"></div>
         </div>
 
-        <div class="filters-row">
-          <div id="weekFilterGroup" class="week-filter-group" role="group" aria-label="Filtrar por semana">
-            <button id="btnWeekAll" class="md-filter-chip is-active" data-week="all" aria-pressed="true" type="button">
-              <span>Todas</span>
-            </button>
-            <button id="btnWeek1" class="md-filter-chip" data-week="1" aria-pressed="false" type="button">
-              <span>Sem 1</span>
-            </button>
-            <button id="btnWeek2" class="md-filter-chip" data-week="2" aria-pressed="false" type="button">
-              <span>Sem 2</span>
-            </button>
-            <button id="btnWeek3" class="md-filter-chip" data-week="3" aria-pressed="false" type="button">
-              <span>Sem 3</span>
-            </button>
-            <button id="btnWeek4" class="md-filter-chip" data-week="4" aria-pressed="false" type="button">
-              <span>Sem 4</span>
-            </button>
-          </div>
+        <!-- Two-Column Workspace: Left Timeline & Right Expandable Inspector -->
+        <div id="roadmapWorkspace" class="roadmap-workspace">
+          <div class="roadmap-list-pane">
+            <div class="roadmap-pane-head">
+              <div class="roadmap-pane-title-wrap">
+                <h2 class="roadmap-pane-title">Tu roadmap</h2>
+                <span id="roadmapIdeasCount" class="roadmap-pane-meta tabular-nums">30 ideas · Sugeridas por IA</span>
+              </div>
 
-          <div class="filter-controls-right">
-            <div class="filter-search-wrap">
-              <label class="sr-only" for="searchRoadmapInput">Buscar en el roadmap</label>
-              <span class="material-symbols-rounded icon-sm filter-search-icon" aria-hidden="true">search</span>
-              <input id="searchRoadmapInput" class="input" type="search" placeholder="Buscar título, gancho o guion…">
-            </div>
+              <div class="roadmap-toolbar">
+                <div class="toolbar-pill-select select-wrap">
+                  <label class="sr-only" for="statusFilterSelect">Filtrar por estado</label>
+                  <select id="statusFilterSelect" class="select">
+                    <option value="all">Todos los estados</option>
+                    <option value="pendiente">Pendiente</option>
+                    <option value="grabado">Grabado</option>
+                    <option value="editado">Editado</option>
+                    <option value="publicado">Publicado</option>
+                  </select>
+                  <span class="material-symbols-rounded icon-sm select-chevron" aria-hidden="true">expand_more</span>
+                </div>
 
-            <div class="filter-select-wrap select-wrap">
-              <label class="sr-only" for="formatFilterSelect">Filtrar por formato</label>
-              <select id="formatFilterSelect" class="select">
-                <option value="all">Todos los formatos</option>
-                <option value="Reel">Reel</option>
-                <option value="Carrusel">Carrusel</option>
-                <option value="Story">Story</option>
-              </select>
-              <span class="material-symbols-rounded icon-sm select-chevron" aria-hidden="true">expand_more</span>
-            </div>
+                <div class="toolbar-pill-select select-wrap">
+                  <label class="sr-only" for="formatFilterSelect">Filtrar por formato</label>
+                  <select id="formatFilterSelect" class="select">
+                    <option value="all">Todos los formatos</option>
+                    <option value="Reel">Reel</option>
+                    <option value="Carrusel">Carrusel</option>
+                    <option value="Story">Story</option>
+                  </select>
+                  <span class="material-symbols-rounded icon-sm select-chevron" aria-hidden="true">expand_more</span>
+                </div>
 
-            <div class="filter-select-wrap select-wrap">
-              <label class="sr-only" for="statusFilterSelect">Filtrar por estado</label>
-              <select id="statusFilterSelect" class="select">
-                <option value="all">Todos los estados</option>
-                <option value="pendiente">Pendiente</option>
-                <option value="grabado">Grabado</option>
-                <option value="editado">Editado</option>
-                <option value="publicado">Publicado</option>
-              </select>
-              <span class="material-symbols-rounded icon-sm select-chevron" aria-hidden="true">expand_more</span>
-            </div>
+                <div class="toolbar-search-box">
+                  <label class="sr-only" for="searchRoadmapInput">Buscar en el roadmap</label>
+                  <span class="material-symbols-rounded icon-sm filter-search-icon" aria-hidden="true">search</span>
+                  <input id="searchRoadmapInput" class="toolbar-search-input" type="search" placeholder="Buscar idea o gancho…">
+                </div>
 
-            <div class="view-mode-group md-segmented" role="group" aria-label="Modo de vista">
-              <button id="viewModeGrid" class="md-segmented__btn is-active" aria-pressed="true" type="button" title="Vista en cuadrícula">
-                <span class="material-symbols-rounded icon-sm" aria-hidden="true">grid_view</span>
-                <span>Cuadrícula</span>
-              </button>
-              <button id="viewModeTimeline" class="md-segmented__btn" aria-pressed="false" type="button" title="Vista en lista">
-                <span class="material-symbols-rounded icon-sm" aria-hidden="true">view_agenda</span>
-                <span>Lista</span>
-              </button>
-            </div>
-
-            <button id="btnResetFilters" class="md-btn md-btn--text md-btn--sm" type="button">Limpiar</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Espacio de trabajo Maestro-Detalle -->
-      <div class="roadmap-workspace">
-        <div class="roadmap-list-pane">
-          <div id="roadmapList" class="roadmap-list roadmap-list--grid" aria-live="polite">
-            <div class="skeleton-grid" aria-busy="true" aria-label="Cargando tarjetas del roadmap">
-              <div class="skeleton-card"><div class="md-skeleton md-skeleton--chip"></div><div class="md-skeleton md-skeleton--title"></div><div class="md-skeleton md-skeleton--text"></div></div>
-              <div class="skeleton-card"><div class="md-skeleton md-skeleton--chip"></div><div class="md-skeleton md-skeleton--title"></div><div class="md-skeleton md-skeleton--text"></div></div>
-              <div class="skeleton-card"><div class="md-skeleton md-skeleton--chip"></div><div class="md-skeleton md-skeleton--title"></div><div class="md-skeleton md-skeleton--text"></div></div>
-              <div class="skeleton-card"><div class="md-skeleton md-skeleton--chip"></div><div class="md-skeleton md-skeleton--title"></div><div class="md-skeleton md-skeleton--text"></div></div>
-              <div class="skeleton-card"><div class="md-skeleton md-skeleton--chip"></div><div class="md-skeleton md-skeleton--title"></div><div class="md-skeleton md-skeleton--text"></div></div>
-              <div class="skeleton-card"><div class="md-skeleton md-skeleton--chip"></div><div class="md-skeleton md-skeleton--title"></div><div class="md-skeleton md-skeleton--text"></div></div>
-            </div>
-          </div>
-
-          <div id="roadmapEmptyState" class="empty-state hidden">
-            <span class="material-symbols-rounded icon-xl" aria-hidden="true">filter_alt_off</span>
-            <h3>Sin resultados para estos filtros</h3>
-            <p>Ajusta la semana, el formato, el estado o el término de búsqueda.</p>
-            <button id="btnEmptyResetFilters" class="md-btn md-btn--outlined md-btn--sm" type="button">Restablecer filtros</button>
-          </div>
-        </div>
-
-        <div id="inspectorBackdrop" class="inspector-backdrop hidden" aria-hidden="true"></div>
-
-        <aside id="dayInspector" class="day-inspector" role="region" aria-label="Inspector del día seleccionado">
-          <div class="md-sheet__handle" aria-hidden="true"></div>
-
-          <div class="inspector-header">
-            <div class="inspector-badges">
-              <span id="inspectorDayBadge" class="md-status-chip md-status-chip--dark badge tabular-nums">Día 01</span>
-              <span id="inspectorWeekBadge" class="md-status-chip md-status-chip--plain badge">Semana 1</span>
-              <span id="inspectorFormatBadge" class="md-status-chip md-status-chip--plain badge">Reel</span>
-              <span id="inspectorPillarBadge" class="md-status-chip md-status-chip--primary badge">Atracción</span>
-              <span id="localDraftBadge" class="md-status-chip md-status-chip--editado badge hidden">Borrador local</span>
-            </div>
-
-            <div class="inspector-nav">
-              <button id="btnPrevDay" class="md-icon-btn md-icon-btn--sm" type="button" aria-label="Día anterior" title="Día anterior">
-                <span class="material-symbols-rounded icon-sm" aria-hidden="true">chevron_left</span>
-              </button>
-              <button id="btnNextDay" class="md-icon-btn md-icon-btn--sm" type="button" aria-label="Día siguiente" title="Día siguiente">
-                <span class="material-symbols-rounded icon-sm" aria-hidden="true">chevron_right</span>
-              </button>
-              <button id="btnToggleEditMode" class="md-btn md-btn--outlined md-btn--sm" type="button">Editar</button>
-              <button id="btnCloseDrawer" class="md-icon-btn md-icon-btn--sm" type="button" aria-label="Cerrar panel" title="Cerrar">
-                <span class="material-symbols-rounded icon-sm" aria-hidden="true">close</span>
-              </button>
-            </div>
-          </div>
-
-          <div id="dayInspectorContent" class="inspector-body">
-            <div class="inspector-status-bar">
-              <span class="inspector-status-label">Estado de producción</span>
-              <div id="inspectorStatusGroup" class="inspector-status-group md-segmented" role="group" aria-label="Estado del contenido">
-                <button id="statusBtn-pendiente" class="status-btn md-segmented__btn is-active" data-status="pendiente" aria-pressed="true" type="button">Pendiente</button>
-                <button id="statusBtn-grabado" class="status-btn md-segmented__btn" data-status="grabado" aria-pressed="false" type="button">Grabado</button>
-                <button id="statusBtn-editado" class="status-btn md-segmented__btn" data-status="editado" aria-pressed="false" type="button">Editado</button>
-                <button id="statusBtn-publicado" class="status-btn md-segmented__btn" data-status="publicado" aria-pressed="false" type="button">Publicado</button>
+                <div class="view-mode-group md-segmented" role="group" aria-label="Modo de vista">
+                  <button id="viewModeTimeline" class="md-segmented__btn is-active" aria-pressed="true" type="button" title="Vista en línea temporal">
+                    <span class="material-symbols-rounded icon-sm" aria-hidden="true">view_agenda</span>
+                  </button>
+                  <button id="viewModeGrid" class="md-segmented__btn" aria-pressed="false" type="button" title="Vista en cuadrícula">
+                    <span class="material-symbols-rounded icon-sm" aria-hidden="true">grid_view</span>
+                  </button>
+                </div>
               </div>
             </div>
 
-            <h2 id="inspectorTitle" class="inspector-title">Cargando roadmap…</h2>
-
-            <!-- Gancho -->
-            <div class="inspector-section">
-              <div class="section-header-row">
-                <span class="section-kicker">Gancho (0–3s)</span>
-                <button id="btnCopyHook" class="md-btn md-btn--text md-btn--sm" type="button">
-                  <span class="material-symbols-rounded icon-sm" aria-hidden="true">content_copy</span>
-                  <span>Copiar</span>
-                </button>
+            <div class="week-quick-filters">
+              <div id="weekFilterGroup" class="week-filter-group" role="group" aria-label="Filtrar por semana">
+                <button id="btnWeekAll" class="md-filter-chip is-active" data-week="all" aria-pressed="true" type="button">Todas</button>
+                <button id="btnWeek1" class="md-filter-chip" data-week="1" aria-pressed="false" type="button">Sem 1</button>
+                <button id="btnWeek2" class="md-filter-chip" data-week="2" aria-pressed="false" type="button">Sem 2</button>
+                <button id="btnWeek3" class="md-filter-chip" data-week="3" aria-pressed="false" type="button">Sem 3</button>
+                <button id="btnWeek4" class="md-filter-chip" data-week="4" aria-pressed="false" type="button">Sem 4</button>
               </div>
-              <p id="inspectorHook" class="hook-box">—</p>
+              <button id="btnResetFilters" class="md-btn md-btn--text md-btn--sm" type="button">Limpiar</button>
             </div>
 
-            <!-- Sugerencia visual y Prompt de imagen -->
-            <div class="inspector-section">
-              <div class="section-header-row">
-                <span class="section-kicker">Encuadre Visual &amp; Prompt de Imagen</span>
-                <button id="btnCopyPrompt" class="md-btn md-btn--text md-btn--sm" type="button">
-                  <span class="material-symbols-rounded icon-sm" aria-hidden="true">content_copy</span>
-                  <span>Copiar</span>
-                </button>
+            <div id="roadmapList" class="roadmap-list roadmap-list--timeline" aria-live="polite">
+              <div class="skeleton-grid" aria-busy="true" aria-label="Cargando tarjetas del roadmap">
+                <div class="skeleton-card"><div class="md-skeleton md-skeleton--chip"></div><div class="md-skeleton md-skeleton--title"></div></div>
+                <div class="skeleton-card"><div class="md-skeleton md-skeleton--chip"></div><div class="md-skeleton md-skeleton--title"></div></div>
+                <div class="skeleton-card"><div class="md-skeleton md-skeleton--chip"></div><div class="md-skeleton md-skeleton--title"></div></div>
+              </div>
+            </div>
+
+            <div id="roadmapEmptyState" class="empty-state hidden">
+              <span class="material-symbols-rounded icon-xl" aria-hidden="true">filter_alt_off</span>
+              <h3>Sin resultados para estos filtros</h3>
+              <p>Ajusta la semana, el formato, el estado o el término de búsqueda.</p>
+              <button id="btnEmptyResetFilters" class="md-btn md-btn--outlined md-btn--sm" type="button">Restablecer filtros</button>
+            </div>
+          </div>
+
+          <div id="inspectorBackdrop" class="inspector-backdrop hidden" aria-hidden="true"></div>
+
+          <!-- Right Inspector (Compact Docked OR Expanded Comfortable View) -->
+          <aside id="dayInspector" class="day-inspector" role="region" aria-label="Inspector del día seleccionado">
+            <div class="md-sheet__handle" aria-hidden="true"></div>
+
+            <div id="dayInspectorContent" class="inspector-body">
+              <div class="inspector-topbar">
+                <div class="inspector-day-counter">
+                  <span id="inspectorDayBadge" class="md-status-chip md-status-chip--dark badge tabular-nums">DÍA 01</span>
+                  <span id="inspectorDayTotal">/ 30</span>
+                </div>
+
+                <div class="inspector-nav">
+                  <button id="btnPrevDay" class="md-icon-btn md-icon-btn--sm" type="button" aria-label="Día anterior" title="Día anterior">
+                    <span class="material-symbols-rounded icon-sm" aria-hidden="true">chevron_left</span>
+                  </button>
+                  <button id="btnNextDay" class="md-icon-btn md-icon-btn--sm" type="button" aria-label="Día siguiente" title="Día siguiente">
+                    <span class="material-symbols-rounded icon-sm" aria-hidden="true">chevron_right</span>
+                  </button>
+                  <button id="btnExpandInspector" class="btn-expand-inspector" type="button" aria-expanded="false" title="Expandir panel para ver guion, visual y caption cómodamente">
+                    <span id="expandInspectorLabel">Expandir</span>
+                    <span class="material-symbols-rounded icon-sm" aria-hidden="true">open_in_new</span>
+                  </button>
+                  <button id="btnCloseDrawer" class="md-icon-btn md-icon-btn--sm" type="button" aria-label="Cerrar panel" title="Cerrar">
+                    <span class="material-symbols-rounded icon-sm" aria-hidden="true">close</span>
+                  </button>
+                </div>
               </div>
 
-              <div class="visual-preview-grid">
-                <div id="visualAspectFrame" class="visual-aspect-frame" data-ratio="9:16">
-                  <div class="visual-frame-top">
-                    <span id="visualFrameDay">Día 01</span>
-                    <span id="visualFrameFormat">Reel</span>
+              <div class="inspector-heading-block">
+                <span class="inspector-kicker">Tu próxima publicación</span>
+                <div class="inspector-submeta">
+                  <span id="inspectorFormatBadge">Reel</span>
+                  <span>·</span>
+                  <span id="inspectorPillarBadge">Atracción</span>
+                  <span>·</span>
+                  <span id="inspectorWeekBadge">Semana 1</span>
+                  <span id="localDraftBadge" class="md-status-chip md-status-chip--editado badge hidden">Editado</span>
+                </div>
+              </div>
+
+              <!-- Status Control (Dropdown in Compact + Segmented Pills in Expanded) -->
+              <div class="inspector-status-bar">
+                <span class="inspector-status-label">Estado de producción</span>
+                <div class="inspector-status-select-wrap">
+                  <span id="inspectorStatusDot" class="status-pill-dot" data-status="pendiente" aria-hidden="true"></span>
+                  <label class="sr-only" for="inspectorStatusSelect">Estado de producción</label>
+                  <select id="inspectorStatusSelect" class="status-pill-dropdown">
+                    <option value="pendiente">Pendiente</option>
+                    <option value="grabado">Grabado</option>
+                    <option value="editado">Editado</option>
+                    <option value="publicado">Publicado</option>
+                  </select>
+                  <span class="material-symbols-rounded icon-sm select-chevron" aria-hidden="true">expand_more</span>
+                </div>
+
+                <div id="inspectorStatusGroup" class="inspector-status-group md-segmented" role="group" aria-label="Estado del contenido">
+                  <button id="statusBtn-pendiente" class="status-btn md-segmented__btn is-active" data-status="pendiente" aria-pressed="true" type="button">Pendiente</button>
+                  <button id="statusBtn-grabado" class="status-btn md-segmented__btn" data-status="grabado" aria-pressed="false" type="button">Grabado</button>
+                  <button id="statusBtn-editado" class="status-btn md-segmented__btn" data-status="editado" aria-pressed="false" type="button">Editado</button>
+                  <button id="statusBtn-publicado" class="status-btn md-segmented__btn" data-status="publicado" aria-pressed="false" type="button">Publicado</button>
+                </div>
+              </div>
+
+              <h2 id="inspectorTitle" class="inspector-title">Cargando roadmap…</h2>
+
+              <!-- Compact Mode Sub-Tabs (Hidden in Expanded Mode where all sections appear together) -->
+              <div id="inspectorSubtabs" class="inspector-subtabs" role="tablist" aria-label="Secciones de la pieza">
+                <button class="inspector-subtab is-active" data-inspector-tab="script" role="tab" aria-selected="true" type="button">Guion</button>
+                <button class="inspector-subtab" data-inspector-tab="visual" role="tab" aria-selected="false" type="button">Visual</button>
+                <button class="inspector-subtab" data-inspector-tab="caption" role="tab" aria-selected="false" type="button">Caption</button>
+              </div>
+
+              <div class="inspector-panels-grid">
+                <!-- Panel 1: Guion (Gancho, Desarrollo, Cierre) -->
+                <div class="inspector-tabpanel is-active" data-inspector-panel="script">
+                  <div class="hook-card">
+                    <div class="section-header-row">
+                      <span class="section-kicker">GANCHO · 0–3 S</span>
+                      <button id="btnCopyHook" class="md-btn md-btn--text md-btn--sm" type="button" title="Copiar gancho">
+                        <span class="material-symbols-rounded icon-sm" aria-hidden="true">content_copy</span>
+                      </button>
+                    </div>
+                    <p id="inspectorHook" class="hook-box">—</p>
+                    <p id="inspectorScreenText" class="hook-screen-cue"></p>
                   </div>
-                  <div id="visualFrameHookPreview" class="visual-frame-safezone">Vista previa de portada</div>
-                  <div class="visual-frame-cta">Zona Segura IG</div>
-                </div>
 
-                <div class="visual-cues-col">
-                  <div class="visual-ratio-row">
-                    <span id="visualRatioLabel" class="md-status-chip md-status-chip--plain badge">Vertical 9:16 (1080×1920)</span>
+                  <div id="inspectorDevBlock" class="script-part-block">
+                    <span class="section-kicker section-kicker--muted">DESARROLLO · 3–25 S</span>
+                    <p id="inspectorDevText" class="script-part-text">—</p>
                   </div>
-                  <p id="visualCompositionTip" class="visual-composition-tip">Deja un 15% libre arriba y abajo para la interfaz de Instagram y centra el titular en el tercio superior.</p>
-                  <img id="visualRefThumb" class="visual-ref-thumb hidden" alt="Miniatura de referencia en YouTube" loading="lazy">
+
+                  <div id="inspectorCloseBlock" class="script-part-block">
+                    <span class="section-kicker section-kicker--muted">CIERRE · 25–30 S</span>
+                    <p id="inspectorCloseText" class="script-part-text">—</p>
+                  </div>
+
+                  <details id="inspectorFullScriptDetails" class="script-part-block">
+                    <summary class="section-kicker section-kicker--muted" style="cursor:pointer;">Ver texto completo del guion</summary>
+                    <pre id="inspectorScript" class="code-block" style="margin-top:6px;">—</pre>
+                  </details>
+                </div>
+
+                <!-- Right Column in Expanded Mode: Visual + Caption side-by-side with Script -->
+                <div class="inspector-right-col">
+                  <!-- Panel 2: Visual & Prompt -->
+                  <div class="inspector-tabpanel" data-inspector-panel="visual">
+                    <div class="section-header-row">
+                      <span class="section-kicker section-kicker--muted">ENCUADRE VISUAL</span>
+                      <span id="visualRatioLabel" class="md-status-chip md-status-chip--plain badge">9:16</span>
+                    </div>
+
+                    <div class="visual-preview-grid">
+                      <div id="visualAspectFrame" class="visual-aspect-frame" data-ratio="9:16">
+                        <div class="visual-frame-top">
+                          <span id="visualFrameDay">Día 01</span>
+                          <span id="visualFrameFormat">Reel</span>
+                        </div>
+                        <div id="visualFrameHookPreview" class="visual-frame-safezone">Portada</div>
+                        <div class="visual-frame-cta">Zona Segura IG</div>
+                      </div>
+
+                      <div class="visual-cues-col">
+                        <p id="visualCompositionTip" class="visual-composition-tip">Deja un 15% libre arriba y abajo para la interfaz de Instagram.</p>
+                        <img id="visualRefThumb" class="visual-ref-thumb hidden" alt="Miniatura de referencia en YouTube" loading="lazy">
+                      </div>
+                    </div>
+
+                    <div class="script-part-block">
+                      <div class="section-header-row">
+                        <span class="section-kicker section-kicker--muted">PROMPT DE IMAGEN</span>
+                        <button id="btnCopyPrompt" class="md-btn md-btn--text md-btn--sm" type="button">
+                          <span class="material-symbols-rounded icon-sm" aria-hidden="true">content_copy</span>
+                          <span>Copiar</span>
+                        </button>
+                      </div>
+                      <pre id="inspectorImagePrompt" class="code-block">—</pre>
+                    </div>
+                  </div>
+
+                  <!-- Panel 3: Caption & Hashtags -->
+                  <div class="inspector-tabpanel" data-inspector-panel="caption">
+                    <div class="script-part-block">
+                      <div class="section-header-row">
+                        <span class="section-kicker section-kicker--muted">CAPTION &amp; HASHTAGS</span>
+                        <button id="btnCopyCaption" class="md-btn md-btn--text md-btn--sm" type="button">
+                          <span class="material-symbols-rounded icon-sm" aria-hidden="true">content_copy</span>
+                          <span>Copiar</span>
+                        </button>
+                      </div>
+                      <div id="inspectorCaption" class="caption-box">—</div>
+                      <div id="inspectorHashtags" class="hashtags-list"></div>
+                    </div>
+
+                    <div id="inspectorYoutubeRef" class="yt-ref-box hidden">
+                      <span class="kv-key">Referencia YouTube:</span>
+                      <a id="inspectorRefLink" class="yt-ref-link" href="#" target="_blank" rel="noopener noreferrer">Ver video</a>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <pre id="inspectorImagePrompt" class="code-block">—</pre>
-            </div>
-
-            <!-- Guion completo -->
-            <div class="inspector-section">
-              <div class="section-header-row">
-                <span class="section-kicker">Guion de Retención</span>
-                <button id="btnCopyScript" class="md-btn md-btn--text md-btn--sm" type="button">
-                  <span class="material-symbols-rounded icon-sm" aria-hidden="true">content_copy</span>
-                  <span>Copiar</span>
-                </button>
-              </div>
-              <pre id="inspectorScript" class="code-block">—</pre>
-            </div>
-
-            <!-- Caption & Hashtags -->
-            <div class="inspector-section">
-              <div class="section-header-row">
-                <span class="section-kicker">Caption &amp; Hashtags</span>
-                <button id="btnCopyCaption" class="md-btn md-btn--text md-btn--sm" type="button">
-                  <span class="material-symbols-rounded icon-sm" aria-hidden="true">content_copy</span>
-                  <span>Copiar</span>
-                </button>
-              </div>
-              <div id="inspectorCaption" class="caption-box">—</div>
-              <div id="inspectorHashtags" class="hashtags-list"></div>
-            </div>
-
-            <!-- Referencia de YouTube -->
-            <div id="inspectorYoutubeRef" class="yt-ref-box hidden">
-              <span class="kv-key">Referencia YouTube:</span>
-              <a id="inspectorRefLink" class="yt-ref-link" href="#" target="_blank" rel="noopener noreferrer">Ver video</a>
-            </div>
-
-            <!-- Editor de borrador local -->
-            <form id="draftEditorForm" class="draft-editor-form hidden">
-              <div class="field-group">
-                <label class="field-label" for="editHookInput">Editar gancho (local)</label>
-                <textarea id="editHookInput" class="textarea" rows="2"></textarea>
-              </div>
-              <div class="field-group">
-                <label class="field-label" for="editPromptInput">Editar prompt de imagen (local)</label>
-                <textarea id="editPromptInput" class="textarea textarea--mono" rows="3"></textarea>
-              </div>
-              <div class="field-group">
-                <label class="field-label" for="editScriptInput">Editar guion (local)</label>
-                <textarea id="editScriptInput" class="textarea textarea--mono" rows="5"></textarea>
-              </div>
-              <div class="field-group">
-                <label class="field-label" for="editCaptionInput">Editar caption (local)</label>
-                <textarea id="editCaptionInput" class="textarea" rows="4"></textarea>
-              </div>
-              <div id="draftEditActions" class="draft-edit-actions">
-                <button id="btnResetDraft" class="md-btn md-btn--text md-btn--sm" type="button">Restaurar original</button>
-                <div class="draft-edit-buttons">
-                  <button id="btnCancelDraft" class="md-btn md-btn--outlined md-btn--sm" type="button">Cancelar</button>
-                  <button id="btnSaveDraft" class="md-btn md-btn--filled md-btn--sm" type="submit">Guardar borrador</button>
+              <!-- Local Draft Editor -->
+              <form id="draftEditorForm" class="draft-editor-form hidden">
+                <div class="field-group">
+                  <label class="field-label" for="editHookInput">Editar gancho (local)</label>
+                  <textarea id="editHookInput" class="textarea" rows="2"></textarea>
                 </div>
+                <div class="field-group">
+                  <label class="field-label" for="editPromptInput">Editar prompt de imagen (local)</label>
+                  <textarea id="editPromptInput" class="textarea textarea--mono" rows="3"></textarea>
+                </div>
+                <div class="field-group">
+                  <label class="field-label" for="editScriptInput">Editar guion (local)</label>
+                  <textarea id="editScriptInput" class="textarea textarea--mono" rows="5"></textarea>
+                </div>
+                <div class="field-group">
+                  <label class="field-label" for="editCaptionInput">Editar caption (local)</label>
+                  <textarea id="editCaptionInput" class="textarea" rows="4"></textarea>
+                </div>
+                <div id="draftEditActions" class="draft-edit-actions">
+                  <button id="btnResetDraft" class="md-btn md-btn--text md-btn--sm" type="button">Restaurar original</button>
+                  <div class="draft-edit-buttons">
+                    <button id="btnCancelDraft" class="md-btn md-btn--outlined md-btn--sm" type="button">Cancelar</button>
+                    <button id="btnSaveDraft" class="md-btn md-btn--filled md-btn--sm" type="submit">Guardar borrador</button>
+                  </div>
+                </div>
+              </form>
+
+              <!-- Bottom Actions Matching Mockup -->
+              <div class="inspector-footer-actions">
+                <button id="btnCopyScript" class="btn-inspector-primary" type="button">
+                  <span class="material-symbols-rounded icon-sm" aria-hidden="true">content_copy</span>
+                  <span>Copiar guion</span>
+                </button>
+
+                <div class="inspector-secondary-row">
+                  <button id="btnToggleEditMode" class="btn-inspector-soft" type="button">
+                    <span>Editar</span>
+                  </button>
+                  <button id="btnOtherSuggestion" class="btn-inspector-soft" type="button" title="Ir a otra idea sugerida">
+                    <span class="material-symbols-rounded icon-sm" aria-hidden="true">sync</span>
+                    <span>Otra sugerencia</span>
+                  </button>
+                </div>
+
+                <p class="inspector-disclaimer">Revisa y adapta las sugerencias de la IA.</p>
               </div>
-            </form>
-          </div>
-        </aside>
-      </div>
-    </section>
-
-    <!-- Vista 2: YouTube Research -->
-    <section id="view-youtube" class="view-panel hidden" role="tabpanel" aria-labelledby="tab-youtube">
-      <div class="studio-hero__heading">
-        <span class="studio-kicker">RADAR DE TENDENCIAS EN TIEMPO REAL</span>
-        <h2 class="studio-display-title">YouTube Research</h2>
-      </div>
-
-      <div class="yt-search-card">
-        <form id="ytSearchForm" class="yt-search-form">
-          <div class="field-group">
-            <label class="field-label" for="ytSearchInput">Buscar tendencias reales en YouTube Data API v3</label>
-            <input id="ytSearchInput" class="input" type="search" placeholder="Ej. automatización con IA, productividad, marketing...">
-          </div>
-
-          <div class="field-group">
-            <label class="field-label" for="ytMaxResultsSelect">Resultados</label>
-            <div class="select-wrap">
-              <select id="ytMaxResultsSelect" class="select">
-                <option value="6" selected>6 videos</option>
-                <option value="10">10 videos</option>
-                <option value="15">15 videos</option>
-              </select>
-              <span class="material-symbols-rounded icon-sm select-chevron" aria-hidden="true">expand_more</span>
             </div>
-          </div>
+          </aside>
+        </div>
+      </section>
 
-          <button id="btnYtSearch" class="md-btn md-btn--filled" type="submit">
-            <span class="material-symbols-rounded icon-sm" aria-hidden="true">search</span>
-            <span>Buscar en YouTube</span>
-          </button>
-        </form>
+      <!-- Vista 2: YouTube Research -->
+      <section id="view-youtube" class="view-panel hidden" role="tabpanel" aria-labelledby="tab-youtube">
+        <div class="studio-hero__heading" style="align-items:flex-start;">
+          <h2 class="studio-display-title" style="font-size:1.75rem;">YouTube Research</h2>
+          <p class="studio-hero__subtitle">Radar de tendencias reales con YouTube Data API v3.</p>
+        </div>
 
-        <div class="yt-history-wrap">
-          <span class="section-kicker">Historial reciente de búsquedas</span>
-          <div id="ytHistoryList" class="yt-history-list">
-            <span class="md-status-chip badge">Cargando historial…</span>
+        <div class="yt-search-card">
+          <form id="ytSearchForm" class="yt-search-form">
+            <div class="field-group">
+              <label class="field-label" for="ytSearchInput">Buscar tendencias reales en YouTube Data API v3</label>
+              <input id="ytSearchInput" class="input" type="search" placeholder="Ej. automatización con IA, productividad, marketing...">
+            </div>
+
+            <div class="field-group">
+              <label class="field-label" for="ytMaxResultsSelect">Resultados</label>
+              <div class="select-wrap">
+                <select id="ytMaxResultsSelect" class="select">
+                  <option value="6" selected>6 videos</option>
+                  <option value="10">10 videos</option>
+                  <option value="15">15 videos</option>
+                </select>
+                <span class="material-symbols-rounded icon-sm select-chevron" aria-hidden="true">expand_more</span>
+              </div>
+            </div>
+
+            <button id="btnYtSearch" class="md-btn md-btn--filled" type="submit">
+              <span class="material-symbols-rounded icon-sm" aria-hidden="true">search</span>
+              <span>Buscar en YouTube</span>
+            </button>
+          </form>
+
+          <div class="yt-history-wrap">
+            <span class="section-kicker section-kicker--muted">Historial reciente de búsquedas</span>
+            <div id="ytHistoryList" class="yt-history-list">
+              <span class="md-status-chip badge">Cargando historial…</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div id="ytResultsSection" class="hidden">
+        <div id="ytResultsSection" class="hidden">
+          <div class="section-heading-bar">
+            <h2>Resultados de la búsqueda</h2>
+          </div>
+          <div id="ytResultsList" class="videos-grid"></div>
+        </div>
+
         <div class="section-heading-bar">
-          <h2>Resultados de la búsqueda</h2>
+          <h2>Catálogo de videos almacenados</h2>
         </div>
-        <div id="ytResultsList" class="videos-grid"></div>
-      </div>
+        <div id="ytVideosGrid" class="videos-grid"></div>
+      </section>
 
-      <div class="section-heading-bar">
-        <h2>Catálogo de videos almacenados</h2>
-      </div>
-      <div id="ytVideosGrid" class="videos-grid"></div>
-    </section>
+      <!-- Vista 3: Oráculo & Fuentes de Datos -->
+      <section id="view-oracle" class="view-panel hidden" role="tabpanel" aria-labelledby="tab-oracle">
+        <div class="studio-hero__heading" style="align-items:flex-start;">
+          <h2 class="studio-display-title" style="font-size:1.75rem;">Oráculo IA &amp; Fuentes</h2>
+          <p class="studio-hero__subtitle">Motor autónomo de tendencias reales y generación editorial con Gemini.</p>
+        </div>
 
-    <!-- Vista 3: Oráculo & Fuentes de Datos -->
-    <section id="view-oracle" class="view-panel hidden" role="tabpanel" aria-labelledby="tab-oracle">
-      <div class="studio-hero__heading">
-        <span class="studio-kicker">DIAGNÓSTICO DE MOTOR AUTÓNOMO</span>
-        <h2 class="studio-display-title">Oráculo &amp; Fuentes de Datos</h2>
-      </div>
+        <div class="panel-grid-2">
+          <article id="oracleHealthCard" class="oracle-info-card">
+            <div class="truth-card-head">
+              <h2>Estado del servidor</h2>
+              <span id="healthStatusText" class="md-status-chip badge">Consultando…</span>
+            </div>
+            <div class="kv-row">
+              <span class="kv-key">Tiempo activo</span>
+              <span id="healthUptimeText" class="kv-val tabular-nums">—</span>
+            </div>
+            <div class="kv-row">
+              <span class="kv-key">Endpoint</span>
+              <span class="kv-val md-mono">GET /health</span>
+            </div>
+          </article>
 
-      <div class="panel-grid-2">
-        <article id="oracleHealthCard" class="oracle-info-card">
-          <div class="truth-card-head">
-            <h2>Estado del servidor</h2>
-            <span id="healthStatusText" class="md-status-chip badge">Consultando…</span>
-          </div>
-          <div class="kv-row">
-            <span class="kv-key">Tiempo activo</span>
-            <span id="healthUptimeText" class="kv-val tabular-nums">—</span>
-          </div>
-          <div class="kv-row">
-            <span class="kv-key">Endpoint</span>
-            <span class="kv-val md-mono">GET /health</span>
-          </div>
-        </article>
+          <article id="oracleLastRunCard" class="oracle-info-card">
+            <div class="truth-card-head">
+              <h2>Última ejecución del Oráculo</h2>
+              <span id="oracleLastStatus" class="md-status-chip badge">Sin ejecución previa</span>
+            </div>
+            <div class="kv-row">
+              <span class="kv-key">Fecha / hora</span>
+              <span id="oracleLastTimestamp" class="kv-val tabular-nums">—</span>
+            </div>
+            <p id="oracleLastDetails" class="visual-composition-tip">Aún no se ha ejecutado ningún ciclo. Puedes dispararlo con POST /api/oracle/run-now</p>
+            <div>
+              <button id="btnOracleTabRun" class="md-btn md-btn--filled md-btn--sm" type="button">
+                <span class="material-symbols-rounded icon-sm" aria-hidden="true">play_arrow</span>
+                <span>Ejecutar ciclo del Oráculo ahora</span>
+              </button>
+            </div>
+          </article>
+        </div>
 
-        <article id="oracleLastRunCard" class="oracle-info-card">
-          <div class="truth-card-head">
-            <h2>Última ejecución del Oráculo</h2>
-            <span id="oracleLastStatus" class="md-status-chip badge">Sin ejecución previa</span>
-          </div>
-          <div class="kv-row">
-            <span class="kv-key">Fecha / hora</span>
-            <span id="oracleLastTimestamp" class="kv-val tabular-nums">—</span>
-          </div>
-          <p id="oracleLastDetails" class="visual-composition-tip">Aún no se ha ejecutado ningún ciclo. Puedes dispararlo con POST /api/oracle/run-now</p>
-          <div>
-            <button id="btnOracleTabRun" class="md-btn md-btn--filled md-btn--sm" type="button">
-              <span class="material-symbols-rounded icon-sm" aria-hidden="true">play_arrow</span>
-              <span>Ejecutar ciclo del Oráculo ahora</span>
-            </button>
-          </div>
-        </article>
-      </div>
+        <div class="section-heading-bar">
+          <h2>Auditoría honesta de fuentes de datos</h2>
+        </div>
 
-      <div class="section-heading-bar">
-        <h2>Auditoría honesta de fuentes de datos</h2>
-      </div>
+        <div id="dataTruthGrid" class="truth-grid">
+          <article id="truthCard-youtube" class="truth-card">
+            <div class="truth-card-head">
+              <h3>YouTube Data API v3</h3>
+              <span class="md-status-chip md-status-chip--live badge badge--live">Real · Conectado</span>
+            </div>
+            <p>Descubre tendencias frescas (14–21 días) con rotación automática de consultas vía <code>youtube.search.list</code> y métricas reales mediante <code>youtube.videos.list</code>.</p>
+          </article>
 
-      <div id="dataTruthGrid" class="truth-grid">
-        <article id="truthCard-youtube" class="truth-card">
-          <div class="truth-card-head">
-            <h3>YouTube Data API v3</h3>
-            <span class="md-status-chip md-status-chip--live badge badge--live">Real · Conectado</span>
-          </div>
-          <p>Descubre tendencias frescas (14–21 días) con rotación automática de consultas vía <code>youtube.search.list</code> y métricas reales de vistas, likes y tags mediante <code>youtube.videos.list</code>.</p>
-        </article>
+          <article id="truthCard-gemini" class="truth-card">
+            <div class="truth-card-head">
+              <h3>Gemini AI</h3>
+              <span class="md-status-chip md-status-chip--live badge badge--live">Real · Conectado</span>
+            </div>
+            <p>Redacta los 30 días con reglas de retención 2026 mediante <code>@google/genai</code> y genera múltiples ángulos por tendencia fuerte.</p>
+          </article>
 
-        <article id="truthCard-gemini" class="truth-card">
-          <div class="truth-card-head">
-            <h3>Gemini AI</h3>
-            <span class="md-status-chip md-status-chip--live badge badge--live">Real · Conectado</span>
-          </div>
-          <p>Redacta los 30 días con reglas de retención 2026 mediante <code>@google/genai</code> y genera 3–5 ángulos distintos por tendencia fuerte tanto al regenerar el roadmap como en el Oráculo mensual.</p>
-        </article>
+          <article id="truthCard-supabase" class="truth-card">
+            <div class="truth-card-head">
+              <h3>Supabase PostgreSQL</h3>
+              <span class="md-status-chip md-status-chip--live badge badge--live">Real · Persistencia</span>
+            </div>
+            <p>Almacena canales, catálogo de videos, historial de búsquedas y las 30 piezas del roadmap con respaldo automático.</p>
+          </article>
 
-        <article id="truthCard-supabase" class="truth-card">
-          <div class="truth-card-head">
-            <h3>Supabase PostgreSQL</h3>
-            <span class="md-status-chip md-status-chip--live badge badge--live">Real · Persistencia</span>
-          </div>
-          <p>Almacena canales, catálogo de videos, historial de búsquedas y las 30 piezas del roadmap (con respaldo automático en memoria si las credenciales no están activas).</p>
-        </article>
-
-        <article id="truthCard-instagram" class="truth-card">
-          <div class="truth-card-head">
-            <h3>Instagram Intelligence</h3>
-            <span class="md-status-chip md-status-chip--simulated badge badge--simulated">Simulado · Plantilla</span>
-          </div>
-          <p>El módulo <code>src/services/instagram.service.ts</code> aún no realiza scraping ni llama a Meta Graph API. Genera patrones de tono para orientar a Gemini hasta implementar extracción directa.</p>
-        </article>
-      </div>
-    </section>
-  </main>
+          <article id="truthCard-instagram" class="truth-card">
+            <div class="truth-card-head">
+              <h3>Instagram Intelligence</h3>
+              <span class="md-status-chip md-status-chip--simulated badge badge--simulated">Simulado · Plantilla</span>
+            </div>
+            <p>El módulo <code>src/services/instagram.service.ts</code> genera patrones de tono simulados para orientar a Gemini hasta implementar extracción directa.</p>
+          </article>
+        </div>
+      </section>
+    </main>
+  </div>
 
   <!-- Confirmation Dialog -->
   <div id="m3ConfirmDialogBackdrop" class="md-dialog-backdrop hidden" aria-hidden="true">

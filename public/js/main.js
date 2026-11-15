@@ -40,11 +40,18 @@ import {
   closeMobileInspector,
   openMobileInspector,
   renderInspectorNow,
+  setInspectorExpanded,
+  setInspectorTab,
   syncResponsiveInspector,
   updatePrevNextButtons,
 } from './views/day-inspector.js';
 
 const VALID_TABS = ['roadmap', 'youtube', 'oracle'];
+const BREADCRUMB_TITLES = {
+  roadmap: 'Roadmap de contenido',
+  youtube: 'YouTube Research',
+  oracle: 'Oráculo IA & Fuentes',
+};
 let searchDebounceTimer = null;
 
 function parseTabFromHash(hashString) {
@@ -67,6 +74,14 @@ export async function switchTab(nextTab, { updateHash = true } = {}) {
     btn.classList.toggle('is-active', active);
     btn.setAttribute('aria-selected', active ? 'true' : 'false');
   });
+
+  if (dom.btnSidebarMyContents) {
+    dom.btnSidebarMyContents.classList.remove('is-active');
+  }
+
+  if (dom.breadcrumbCurrent) {
+    dom.breadcrumbCurrent.textContent = BREADCRUMB_TITLES[targetTab] || 'Roadmap de contenido';
+  }
 
   VALID_TABS.forEach((tab) => {
     const panel = document.getElementById(`view-${tab}`);
@@ -103,12 +118,31 @@ export async function selectDay(dayNumber, options = {}) {
   state.selectedDay = item.day_number;
   state.isEditingDraft = false;
 
+  const targetWeek = item.week_number || Math.min(4, Math.ceil(item.day_number / 7));
+  if (!state.expandedWeeks.has(targetWeek)) {
+    state.expandedWeeks.add(targetWeek);
+    const groupEl = document.querySelector(`.week-group[data-week-group="${targetWeek}"]`);
+    if (groupEl) {
+      groupEl.classList.remove('is-collapsed');
+      groupEl.querySelector('.week-header')?.setAttribute('aria-expanded', 'true');
+    }
+  }
+
   document.querySelectorAll('.day-card').forEach((card) => {
     const cardDay = Number(card.getAttribute('data-day'));
     const isSelected = cardDay === state.selectedDay;
     card.classList.toggle('day-card--selected', isSelected);
     card.setAttribute('aria-current', isSelected ? 'true' : 'false');
   });
+
+  document.querySelectorAll('[data-dot-day]').forEach((dot) => {
+    const dotDay = Number(dot.getAttribute('data-dot-day'));
+    dot.classList.toggle('is-active', dotDay === state.selectedDay);
+  });
+
+  if (options.expandInspector && isDesktop()) {
+    setInspectorExpanded(true);
+  }
 
   if (options.openDrawer && !isDesktop()) {
     openMobileInspector(options.triggerEl);
@@ -422,17 +456,71 @@ function bindEvents() {
   dom.btnResetFilters?.addEventListener('click', resetFilters);
   dom.btnEmptyResetFilters?.addEventListener('click', resetFilters);
 
+  dom.dayDotsStrip?.addEventListener('click', (e) => {
+    const dot = e.target.closest('[data-dot-day]');
+    if (!dot) return;
+    const dayNum = Number(dot.getAttribute('data-dot-day'));
+    selectDay(dayNum, { openDrawer: true, triggerEl: dot });
+  });
+
   dom.roadmapList?.addEventListener('click', (e) => {
+    const weekBtn = e.target.closest('[data-toggle-week]');
+    if (weekBtn) {
+      const weekNum = Number(weekBtn.getAttribute('data-toggle-week'));
+      const groupEl = weekBtn.closest('.week-group');
+      if (state.expandedWeeks.has(weekNum)) {
+        state.expandedWeeks.delete(weekNum);
+        groupEl?.classList.add('is-collapsed');
+        weekBtn.setAttribute('aria-expanded', 'false');
+      } else {
+        state.expandedWeeks.add(weekNum);
+        groupEl?.classList.remove('is-collapsed');
+        weekBtn.setAttribute('aria-expanded', 'true');
+      }
+      return;
+    }
+
+    const expandTrigger = e.target.closest('[data-expand-day]');
+    if (expandTrigger) {
+      e.stopPropagation();
+      const dayNum = Number(expandTrigger.getAttribute('data-expand-day'));
+      selectDay(dayNum, { openDrawer: true, expandInspector: true, triggerEl: expandTrigger });
+      return;
+    }
+
     const card = e.target.closest('.day-card[data-day]');
     if (!card) return;
     const dayNum = Number(card.getAttribute('data-day'));
     selectDay(dayNum, { openDrawer: true, triggerEl: card });
   });
 
+  dom.roadmapList?.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const card = e.target.closest('.day-card[data-day]');
+    if (!card || e.target !== card) return;
+    e.preventDefault();
+    const dayNum = Number(card.getAttribute('data-day'));
+    selectDay(dayNum, { openDrawer: true, triggerEl: card });
+  });
+
+  dom.btnExpandInspector?.addEventListener('click', () => {
+    setInspectorExpanded(!state.isInspectorExpanded);
+  });
+
+  dom.inspectorSubtabs?.addEventListener('click', (e) => {
+    const tabBtn = e.target.closest('[data-inspector-tab]');
+    if (!tabBtn) return;
+    setInspectorTab(tabBtn.getAttribute('data-inspector-tab'));
+  });
+
   dom.btnPrevDay?.addEventListener('click', () => stepDay(-1));
   dom.btnNextDay?.addEventListener('click', () => stepDay(1));
   dom.btnCloseDrawer?.addEventListener('click', () => closeMobileInspector({ restoreFocus: true }));
   dom.inspectorBackdrop?.addEventListener('click', () => closeMobileInspector({ restoreFocus: true }));
+
+  dom.inspectorStatusSelect?.addEventListener('change', (e) => {
+    handleStatusChange(state.selectedDay, e.target.value);
+  });
 
   dom.inspectorStatusGroup?.addEventListener('click', (e) => {
     const btn = e.target.closest('.status-btn[data-status]');
@@ -457,6 +545,39 @@ function bindEvents() {
     const captionText = dom.inspectorCaption.textContent.trim();
     const full = tags ? `${captionText}\n\n${tags}` : captionText;
     copyText(full, 'Caption');
+  });
+
+  dom.btnOtherSuggestion?.addEventListener('click', () => {
+    const list = state.roadmap;
+    if (!list || list.length === 0) return;
+    const nextDay = (state.selectedDay % list.length) + 1;
+    selectDay(nextDay, { immediate: false });
+    showToast(`Mostrando sugerencia del Día ${padDay(nextDay)}.`, 'info');
+  });
+
+  dom.btnSidebarMyContents?.addEventListener('click', async () => {
+    await switchTab('roadmap');
+    setInspectorExpanded(false);
+    dom.btnSidebarMyContents.classList.add('is-active');
+    if (dom.breadcrumbCurrent) {
+      dom.breadcrumbCurrent.textContent = 'Mis contenidos';
+    }
+    if (dom.statusFilterSelect) {
+      dom.statusFilterSelect.value = 'publicado';
+      state.filters.status = 'publicado';
+      renderRoadmapList();
+      updatePrevNextButtons();
+    }
+  });
+
+  dom.btnExploreIdeas?.addEventListener('click', () => switchTab('youtube'));
+
+  dom.btnSidebarHelp?.addEventListener('click', () => {
+    showToast('Atajos: ← / → cambia de día · "Ver guion ›" expande el panel derecho · Esc contrae.', 'info');
+  });
+
+  dom.btnSidebarSettings?.addEventListener('click', () => {
+    toggleTheme();
   });
 
   dom.btnToggleEditMode?.addEventListener('click', () => {
@@ -518,10 +639,17 @@ function bindEvents() {
     if (dom.m3ConfirmDialog && !dom.m3ConfirmDialog.classList.contains('hidden')) {
       return;
     }
-    if (e.key === 'Escape' && state.isDrawerOpen && !isDesktop()) {
-      e.preventDefault();
-      closeMobileInspector({ restoreFocus: true });
-      return;
+    if (e.key === 'Escape') {
+      if (state.isDrawerOpen && !isDesktop()) {
+        e.preventDefault();
+        closeMobileInspector({ restoreFocus: true });
+        return;
+      }
+      if (state.isInspectorExpanded && isDesktop()) {
+        e.preventDefault();
+        setInspectorExpanded(false);
+        return;
+      }
     }
     if (state.activeTab !== 'roadmap') return;
     const tag = document.activeElement?.tagName;

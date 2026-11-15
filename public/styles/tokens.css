@@ -1,38 +1,31 @@
 /* ==========================================================================
-   Atelier Editorial Studio — Design System Tokens
-   Concepts: Swiss Editorial Grid, Notion Calendar Warm Neutrals, Linear Light
+   Content Studio — Design System Tokens
+   Typography: Google Sans Flex | Palette: Paper White + Soft Lavender Ink
    ========================================================================== */
 
 :root {
-  /* ------------------------------------------------------------------------
-     Typography Triad: Editorial Display + Geometric Sans + Technical Mono
-     ------------------------------------------------------------------------ */
-  --font-display: 'Instrument Serif', Georgia, 'Times New Roman', serif;
-  --font-sans: 'Inter', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  /* Typography */
+  --font-display: 'Google Sans Flex', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-sans: 'Google Sans Flex', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-  /* ------------------------------------------------------------------------
-     Shape Scale (Consistent 10px Architectural Radius per User Direction)
-     ------------------------------------------------------------------------ */
+  /* Shape Scale (Consistent 10px Architectural Radius + Pill Controls) */
   --radius-xs: 6px;
   --radius-sm: 8px;
   --radius-md: 10px;
-  --radius-lg: 10px;
+  --radius-lg: 14px;
   --radius-full: 9999px;
 
-  /* ------------------------------------------------------------------------
-     Motion Tokens (Crisp Fade-In / Fade-Out, Zero Pulse)
-     ------------------------------------------------------------------------ */
+  /* Motion Tokens (Crisp Fade-In / Fade-Out, Zero Pulse) */
   --ease-standard: cubic-bezier(0.2, 0.0, 0.0, 1.0);
   --ease-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1.0);
   --duration-fast: 120ms;
   --duration-normal: 180ms;
   --duration-slow: 260ms;
 
-  /* ------------------------------------------------------------------------
-     Z-Index Scale
-     ------------------------------------------------------------------------ */
+  /* Z-Index Scale */
   --z-docked: 10;
+  --z-sidebar: 90;
   --z-topbar: 100;
   --z-scrim: 400;
   --z-sheet: 410;
@@ -42,7 +35,7 @@
 }
 
 /* ==========================================================================
-   Light Theme — Pure Crisp Paper White & Charcoal Ink (Default)
+   Light Theme — Paper White & Soft Lavender Editorial (Default)
    ========================================================================== */
 :root,
 :root[data-theme="light"],
@@ -51,34 +44,39 @@
 
   /* Surfaces */
   --surface-canvas: #FFFFFF;
+  --surface-sidebar: #FAFAFB;
   --surface-elevated: #FFFFFF;
-  --surface-subtle: #FAFAFA;
-  --surface-stone: #F6F6F4;
-  --surface-hover: #F5F5F3;
-  --surface-active: #F2F2EF;
-  --surface-topbar: rgba(255, 255, 255, 0.88);
-  --surface-scrim: rgba(17, 17, 17, 0.28);
+  --surface-subtle: #F9F8FA;
+  --surface-stone: #F5F4F6;
+  --surface-hover: #F1F0F4;
+  --surface-active: #EEEBF5;
+  --surface-lavender: #F1ECF9;
+  --surface-lavender-soft: #F7F4FC;
+  --surface-topbar: rgba(255, 255, 255, 0.92);
+  --surface-scrim: rgba(29, 27, 32, 0.28);
 
   /* Ink */
-  --ink-primary: #111111;
-  --ink-secondary: #575754;
-  --ink-muted: #8C8C87;
+  --ink-primary: #1D1B20;
+  --ink-secondary: #625F6A;
+  --ink-muted: #938F9C;
   --ink-inverse: #FFFFFF;
 
-  /* Hairlines (1px subtle structural rules, zero bold borders) */
-  --border-hairline: rgba(17, 17, 17, 0.09);
-  --border-strong: rgba(17, 17, 17, 0.18);
-  --border-active: #111111;
-
-  /* Action Accent — Monochrome Editorial Ink */
-  --accent-bg: #111111;
-  --accent-bg-hover: #292927;
+  /* Accents */
+  --accent-plum: #443370;
+  --accent-plum-ink: #3E2E68;
+  --accent-bg: #1D1B20;
+  --accent-bg-hover: #322F37;
   --accent-fg: #FFFFFF;
 
-  /* Semantic Status Dots & Labels (Purely Functional, Zero Neon) */
-  --status-pendiente-dot: #9A9A95;
-  --status-pendiente-fg: #575754;
-  --status-pendiente-bg: #F4F4F2;
+  /* Hairlines */
+  --border-hairline: rgba(29, 27, 32, 0.08);
+  --border-strong: rgba(29, 27, 32, 0.16);
+  --border-active: #443370;
+
+  /* Semantic Status Dots & Labels */
+  --status-pendiente-dot: #8C8896;
+  --status-pendiente-fg: #625F6A;
+  --status-pendiente-bg: #F1F0F4;
 
   --status-grabado-dot: #2563EB;
   --status-grabado-fg: #1E40AF;
@@ -104,43 +102,48 @@
   --status-error-fg: #991B1B;
   --status-error-bg: #FEF2F2;
 
-  /* Whisper-quiet shadows (only for floating modal/snackbar) */
-  --shadow-sheet: 0 12px 32px rgba(17, 17, 17, 0.08), 0 1px 3px rgba(17, 17, 17, 0.05);
-  --shadow-dialog: 0 20px 48px rgba(17, 17, 17, 0.12), 0 2px 8px rgba(17, 17, 17, 0.06);
+  /* Whisper-quiet shadows */
+  --shadow-sheet: 0 12px 32px rgba(29, 27, 32, 0.08), 0 1px 3px rgba(29, 27, 32, 0.04);
+  --shadow-dialog: 0 20px 48px rgba(29, 27, 32, 0.12), 0 2px 8px rgba(29, 27, 32, 0.06);
 }
 
 /* ==========================================================================
-   Dark Theme — Optional Studio Obsidian (Only when toggled via #btnThemeToggle)
+   Dark Theme — Optional Studio Obsidian
    ========================================================================== */
 :root[data-theme="dark"],
 [data-theme="dark"] {
   color-scheme: dark;
 
-  --surface-canvas: #0D0D0E;
-  --surface-elevated: #141416;
-  --surface-subtle: #161618;
-  --surface-stone: #1B1B1E;
-  --surface-hover: #1E1E22;
-  --surface-active: #232327;
-  --surface-topbar: rgba(13, 13, 14, 0.88);
+  --surface-canvas: #0E0D11;
+  --surface-sidebar: #131217;
+  --surface-elevated: #17161C;
+  --surface-subtle: #18171D;
+  --surface-stone: #1C1B22;
+  --surface-hover: #24222B;
+  --surface-active: #2B2836;
+  --surface-lavender: #272236;
+  --surface-lavender-soft: #201C2C;
+  --surface-topbar: rgba(14, 13, 17, 0.90);
   --surface-scrim: rgba(0, 0, 0, 0.56);
 
-  --ink-primary: #F4F4F2;
-  --ink-secondary: #A1A19C;
-  --ink-muted: #70706B;
-  --ink-inverse: #111111;
+  --ink-primary: #F4F3F7;
+  --ink-secondary: #A9A5B4;
+  --ink-muted: #767280;
+  --ink-inverse: #111015;
 
-  --border-hairline: rgba(255, 255, 255, 0.10);
-  --border-strong: rgba(255, 255, 255, 0.22);
-  --border-active: #F4F4F2;
+  --accent-plum: #A995E5;
+  --accent-plum-ink: #C5B6F2;
+  --accent-bg: #F4F3F7;
+  --accent-bg-hover: #E1DFE8;
+  --accent-fg: #111015;
 
-  --accent-bg: #F4F4F2;
-  --accent-bg-hover: #E0E0DC;
-  --accent-fg: #111111;
+  --border-hairline: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.18);
+  --border-active: #A995E5;
 
-  --status-pendiente-dot: #71717A;
-  --status-pendiente-fg: #A1A1AA;
-  --status-pendiente-bg: #27272A;
+  --status-pendiente-dot: #8E8A99;
+  --status-pendiente-fg: #B8B4C2;
+  --status-pendiente-bg: #26252D;
 
   --status-grabado-dot: #60A5FA;
   --status-grabado-fg: #93C5FD;

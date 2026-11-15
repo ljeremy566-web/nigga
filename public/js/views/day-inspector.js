@@ -50,6 +50,104 @@ function handleMobileInspectorKeydown(e) {
   }
 }
 
+function parseScriptSegments(rawScript, title) {
+  const script = String(rawScript || '').trim();
+  if (!script) {
+    return {
+      screenCue: title ? `Texto en pantalla: "${title}"` : '',
+      development: '—',
+      closing: '—',
+    };
+  }
+
+  const lines = script.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  const devLines = [];
+  const closeLines = [];
+  let bucket = 'dev';
+
+  lines.forEach((line, idx) => {
+    const cleanLine = line.replace(/^\[[^\]]+\]\s*/i, '').trim();
+    const isHookTimestamp = /^\[?0:00/i.test(line) || /\bgancho\b/i.test(line);
+    const isClosingMarker = /^\[?(0:2[5-9]|0:3\d|cierre|cta)\b/i.test(line) || /\b(comenta|guarda|sígueme|escribe|dm)\b/i.test(line);
+    const isDevMarker = /^\[?0:0[3-9]|^\[?0:1\d|^\[?0:2[0-4]|\b(desarrollo|cuerpo|valor)\b/i.test(line);
+
+    if (idx === 0 && isHookTimestamp && lines.length > 1) {
+      bucket = 'hook';
+      return;
+    }
+    if (isClosingMarker) {
+      bucket = 'close';
+      const stripped = cleanLine.replace(/^(cierre|cta)\s*:\s*/i, '').trim();
+      if (stripped) closeLines.push(stripped);
+      return;
+    }
+    if (isDevMarker || bucket === 'hook') {
+      bucket = 'dev';
+      const stripped = cleanLine.replace(/^(desarrollo|cuerpo)\s*:\s*/i, '').trim();
+      if (stripped) devLines.push(stripped);
+      return;
+    }
+    if (cleanLine) {
+      if (bucket === 'close') closeLines.push(cleanLine);
+      else devLines.push(cleanLine);
+    }
+  });
+
+  const shortTitle = String(title || '').split(/[.,:]/)[0].trim();
+  const screenCue = shortTitle ? `Texto en pantalla: "${shortTitle}"` : '';
+
+  return {
+    screenCue,
+    development: devLines.length > 0 ? devLines.join('\n') : script,
+    closing: closeLines.length > 0 ? closeLines.join('\n') : 'Guarda esta pieza y cuéntame qué paso aplicarás hoy.',
+  };
+}
+
+export function setInspectorTab(tabName) {
+  const valid = ['script', 'visual', 'caption'];
+  const next = valid.includes(tabName) ? tabName : 'script';
+  state.inspectorTab = next;
+
+  dom.inspectorSubtabs?.querySelectorAll('[data-inspector-tab]').forEach((btn) => {
+    const active = btn.getAttribute('data-inspector-tab') === next;
+    btn.classList.toggle('is-active', active);
+    btn.setAttribute('aria-selected', active ? 'true' : 'false');
+  });
+
+  document.querySelectorAll('[data-inspector-panel]').forEach((panel) => {
+    const active = panel.getAttribute('data-inspector-panel') === next;
+    panel.classList.toggle('is-active', active);
+  });
+}
+
+export function setInspectorExpanded(expanded) {
+  if (!isDesktop()) {
+    state.isInspectorExpanded = false;
+    dom.roadmapWorkspace?.classList.remove('is-inspector-expanded');
+    dom.dayInspector?.classList.remove('is-expanded');
+    return;
+  }
+
+  const next = Boolean(expanded);
+  const changed = state.isInspectorExpanded !== next;
+  state.isInspectorExpanded = next;
+  dom.roadmapWorkspace?.classList.toggle('is-inspector-expanded', state.isInspectorExpanded);
+  dom.dayInspector?.classList.toggle('is-expanded', state.isInspectorExpanded);
+
+  if (dom.btnExpandInspector) {
+    dom.btnExpandInspector.setAttribute('aria-expanded', state.isInspectorExpanded ? 'true' : 'false');
+    dom.btnExpandInspector.title = state.isInspectorExpanded
+      ? 'Contraer y volver al listado del roadmap'
+      : 'Expandir para ver guion, visual y caption cómodamente';
+  }
+  if (dom.expandInspectorLabel) {
+    dom.expandInspectorLabel.textContent = state.isInspectorExpanded ? 'Volver al roadmap' : 'Expandir';
+  }
+  if (changed && state.isInspectorExpanded && dom.dayInspector) {
+    dom.dayInspector.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' });
+  }
+}
+
 export function updatePrevNextButtons() {
   if (!dom.btnPrevDay || !dom.btnNextDay) return;
   const filtered = getFilteredRoadmap();
@@ -65,6 +163,12 @@ export function updatePrevNextButtons() {
 }
 
 export function updateInspectorStatusButtons(activeStatus) {
+  if (dom.inspectorStatusSelect) {
+    dom.inspectorStatusSelect.value = activeStatus;
+  }
+  if (dom.inspectorStatusDot) {
+    dom.inspectorStatusDot.setAttribute('data-status', activeStatus);
+  }
   if (!dom.inspectorStatusGroup) return;
   dom.inspectorStatusGroup.querySelectorAll('.status-btn').forEach((btn) => {
     const btnStatus = btn.getAttribute('data-status');
@@ -85,7 +189,10 @@ export function renderInspectorNow(rawItem) {
 
   const item = getEffectiveDayItem(rawItem);
 
-  dom.inspectorDayBadge.textContent = `Día ${padDay(item.day_number)}`;
+  dom.inspectorDayBadge.textContent = `DÍA ${padDay(item.day_number)}`;
+  if (dom.inspectorDayTotal) {
+    dom.inspectorDayTotal.textContent = `/ ${state.roadmap.length || 30}`;
+  }
   dom.inspectorWeekBadge.textContent = `Semana ${item.week_number}`;
   dom.inspectorFormatBadge.textContent = item.format;
   dom.inspectorPillarBadge.textContent = item.content_pillar;
@@ -100,6 +207,17 @@ export function renderInspectorNow(rawItem) {
   dom.inspectorScript.textContent = item.script;
   dom.inspectorCaption.textContent = item.caption;
 
+  const parsed = parseScriptSegments(item.script, item.title);
+  if (dom.inspectorScreenText) {
+    dom.inspectorScreenText.textContent = parsed.screenCue;
+  }
+  if (dom.inspectorDevText) {
+    dom.inspectorDevText.textContent = parsed.development;
+  }
+  if (dom.inspectorCloseText) {
+    dom.inspectorCloseText.textContent = parsed.closing;
+  }
+
   const isSquare = item.format === 'Carrusel';
   const ratio = isSquare ? '1:1' : '9:16';
   dom.visualAspectFrame.setAttribute('data-ratio', ratio);
@@ -108,9 +226,7 @@ export function renderInspectorNow(rawItem) {
   if (dom.visualFrameHookPreview) {
     dom.visualFrameHookPreview.textContent = item.hook || item.title;
   }
-  dom.visualRatioLabel.textContent = isSquare
-    ? 'Cuadrado 1:1 (1080×1080)'
-    : 'Vertical 9:16 (1080×1920)';
+  dom.visualRatioLabel.textContent = isSquare ? '1:1 (1080×1080)' : '9:16 (1080×1920)';
   dom.visualCompositionTip.textContent = isSquare
     ? 'Portada limpia con titular de 5–7 palabras en alto contraste, un único punto focal y margen uniforme.'
     : 'Deja un 15% libre arriba y abajo para la interfaz de Reels/Stories y ubica el titular en el tercio superior.';
@@ -166,6 +282,8 @@ export function renderInspectorNow(rawItem) {
     dom.editCaptionInput.value = item.caption;
     dom.btnResetDraft.disabled = !item.isEditedLocally;
   }
+
+  setInspectorTab(state.inspectorTab);
 }
 
 export function syncResponsiveInspector() {
@@ -181,16 +299,20 @@ export function syncResponsiveInspector() {
     dom.dayInspector.setAttribute('role', 'region');
     dom.dayInspector.removeAttribute('aria-modal');
     dom.dayInspector.setAttribute('aria-hidden', 'false');
-  } else if (!state.isDrawerOpen) {
-    document.removeEventListener('keydown', handleMobileInspectorKeydown, true);
-    document.body.classList.remove('is-scroll-locked');
-    document.body.style.overflow = '';
-    dom.inspectorBackdrop.classList.add('hidden');
-    dom.inspectorBackdrop.setAttribute('aria-hidden', 'true');
-    dom.dayInspector.classList.add('hidden');
-    dom.dayInspector.setAttribute('role', 'dialog');
-    dom.dayInspector.setAttribute('aria-modal', 'true');
-    dom.dayInspector.setAttribute('aria-hidden', 'true');
+    setInspectorExpanded(state.isInspectorExpanded);
+  } else {
+    setInspectorExpanded(false);
+    if (!state.isDrawerOpen) {
+      document.removeEventListener('keydown', handleMobileInspectorKeydown, true);
+      document.body.classList.remove('is-scroll-locked');
+      document.body.style.overflow = '';
+      dom.inspectorBackdrop.classList.add('hidden');
+      dom.inspectorBackdrop.setAttribute('aria-hidden', 'true');
+      dom.dayInspector.classList.add('hidden');
+      dom.dayInspector.setAttribute('role', 'dialog');
+      dom.dayInspector.setAttribute('aria-modal', 'true');
+      dom.dayInspector.setAttribute('aria-hidden', 'true');
+    }
   }
 }
 
