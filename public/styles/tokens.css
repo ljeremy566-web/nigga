@@ -1,22 +1,44 @@
 /* ==========================================================================
    Content Studio — Design System Tokens
-   Typography: Google Sans Flex | Palette: Paper White + Soft Lavender Ink
+   Typography: Self-hosted Google Sans Flex | Line-height: 145% (1.45)
+   Gradient Stops (Figma): #F0EAF7 (0%) -> #F5EEF4 (55%) -> #FBF1EC (100%)
    ========================================================================== */
+
+@font-face {
+  font-family: 'Google Sans Flex';
+  font-style: normal;
+  font-weight: 100 900;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url('/fonts/GoogleSansFlex-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Google Sans Flex';
+  font-style: normal;
+  font-weight: 100 900;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url('/fonts/GoogleSansFlex-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
 
 :root {
   /* Typography */
   --font-display: 'Google Sans Flex', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-sans: 'Google Sans Flex', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --leading-figma: 1.45; /* 145% from Figma */
 
-  /* Shape Scale (Consistent 10px Architectural Radius + Pill Controls) */
+  /* Shape Scale */
   --radius-xs: 6px;
   --radius-sm: 8px;
   --radius-md: 10px;
   --radius-lg: 14px;
   --radius-full: 9999px;
 
-  /* Motion Tokens (Crisp Fade-In / Fade-Out, Zero Pulse) */
+  /* Motion Tokens */
   --ease-standard: cubic-bezier(0.2, 0.0, 0.0, 1.0);
   --ease-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1.0);
   --duration-fast: 120ms;
@@ -35,7 +57,7 @@
 }
 
 /* ==========================================================================
-   Light Theme — Paper White & Soft Lavender Editorial (Default)
+   Light Theme — Figma Warm Stone, Paper White & Soft Lavender/Peach Gradient
    ========================================================================== */
 :root,
 :root[data-theme="light"],
@@ -46,12 +68,14 @@
   --surface-canvas: #FFFFFF;
   --surface-sidebar: #FAFAFB;
   --surface-elevated: #FFFFFF;
-  --surface-subtle: #F9F8FA;
-  --surface-stone: #F5F4F6;
-  --surface-hover: #F1F0F4;
-  --surface-active: #EEEBF5;
-  --surface-lavender: #F1ECF9;
-  --surface-lavender-soft: #F7F4FC;
+  --surface-subtle: #FBF9F8;
+  --surface-stone: #F3F1F0;
+  --surface-inspector: #F7F5F4;
+  --surface-hover: #F1EFF4;
+  --surface-active: #ECE8F4;
+  --surface-lavender: #ECE7F5;
+  --surface-lavender-soft: #F3EFF9;
+  --gradient-editorial: linear-gradient(115deg, #F0EAF7 0%, #F5EEF4 55%, #FBF1EC 100%);
   --surface-topbar: rgba(255, 255, 255, 0.92);
   --surface-scrim: rgba(29, 27, 32, 0.28);
 
@@ -64,8 +88,8 @@
   /* Accents */
   --accent-plum: #443370;
   --accent-plum-ink: #3E2E68;
-  --accent-bg: #1D1B20;
-  --accent-bg-hover: #322F37;
+  --accent-bg: #26252B;
+  --accent-bg-hover: #3A3842;
   --accent-fg: #FFFFFF;
 
   /* Hairlines */
@@ -119,10 +143,12 @@
   --surface-elevated: #17161C;
   --surface-subtle: #18171D;
   --surface-stone: #1C1B22;
+  --surface-inspector: #18171E;
   --surface-hover: #24222B;
   --surface-active: #2B2836;
   --surface-lavender: #272236;
   --surface-lavender-soft: #201C2C;
+  --gradient-editorial: linear-gradient(125deg, #272136 0%, #26202C 55%, #2D2322 100%);
   --surface-topbar: rgba(14, 13, 17, 0.90);
   --surface-scrim: rgba(0, 0, 0, 0.56);
 

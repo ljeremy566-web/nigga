@@ -103,7 +103,7 @@ body {
   color: var(--ink-primary);
   font-family: var(--font-sans);
   font-size: 0.875rem;
-  line-height: 1.5;
+  line-height: var(--leading-figma);
   font-weight: 400;
 }
 

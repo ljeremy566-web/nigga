@@ -24,15 +24,16 @@
 
 .studio-display-title {
   font-family: var(--font-display);
-  font-size: clamp(1.9rem, 3.2vw, 2.5rem);
-  font-weight: 500;
-  line-height: 1.12;
-  letter-spacing: -0.03em;
+  font-size: clamp(1.95rem, 3.2vw, 2.55rem);
+  font-weight: 400;
+  line-height: var(--leading-figma);
+  letter-spacing: -0.025em;
   color: var(--ink-primary);
 }
 
 .studio-hero__subtitle {
   font-size: 0.9375rem;
+  line-height: var(--leading-figma);
   color: var(--ink-secondary);
   font-weight: 400;
 }
@@ -230,6 +231,7 @@
 
 .plan-progress-sub {
   font-size: 0.72rem;
+  line-height: var(--leading-figma);
   color: var(--ink-muted);
 }
 
@@ -291,6 +293,7 @@
 
 .day-dots-caption {
   font-size: 0.68rem;
+  line-height: var(--leading-figma);
   color: var(--ink-muted);
 }
 
@@ -321,7 +324,7 @@
 .roadmap-list-pane {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
   min-width: 0;
   transition: opacity var(--duration-fast) var(--ease-standard);
 }
@@ -343,13 +346,15 @@
 
 .roadmap-pane-title {
   font-size: 1.25rem;
-  font-weight: 600;
+  font-weight: 500;
+  line-height: var(--leading-figma);
   letter-spacing: -0.02em;
   color: var(--ink-primary);
 }
 
 .roadmap-pane-meta {
   font-size: 0.75rem;
+  line-height: var(--leading-figma);
   color: var(--ink-muted);
 }
 
@@ -413,13 +418,13 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
 }
 
 .week-filter-group {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 2px;
 }
 
 /* --------------------------------------------------------------------------
@@ -478,7 +483,8 @@
 
 .week-title {
   font-size: 0.9375rem;
-  font-weight: 600;
+  font-weight: 500;
+  line-height: var(--leading-figma);
   letter-spacing: -0.015em;
   color: var(--ink-primary);
 }
@@ -492,6 +498,7 @@
 
 .week-subtitle {
   font-size: 0.72rem;
+  line-height: var(--leading-figma);
   color: var(--ink-muted);
 }
 
@@ -519,7 +526,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
   padding-left: 34px;
 }
 
@@ -527,8 +534,8 @@
   content: '';
   position: absolute;
   left: 12px;
-  top: 18px;
-  bottom: 18px;
+  top: 20px;
+  bottom: 20px;
   width: 1px;
   background-color: var(--border-hairline);
 }
@@ -547,8 +554,8 @@
   flex-direction: column;
   gap: 6px;
   width: 100%;
-  padding: 13px 16px;
-  border-radius: 12px;
+  padding: 15px 18px;
+  border-radius: 14px;
   border: 1px solid transparent;
   background-color: var(--surface-canvas);
   text-align: left;
@@ -562,19 +569,19 @@
 }
 
 .day-card--selected {
-  background-color: var(--surface-lavender-soft);
-  border-color: rgba(68, 51, 112, 0.12);
+  background: var(--gradient-editorial);
+  border-color: rgba(68, 51, 112, 0.08);
 }
 
 .day-card--selected:hover {
-  background-color: var(--surface-lavender-soft);
+  background: var(--gradient-editorial);
 }
 
 /* Numbered Timeline Circle Node */
 .roadmap-list--timeline .day-card-node {
   position: absolute;
   left: -34px;
-  top: 15px;
+  top: 17px;
   width: 24px;
   height: 24px;
   border-radius: 50%;
@@ -601,8 +608,8 @@
 }
 
 .roadmap-list--grid .day-card--selected {
-  background-color: var(--surface-lavender-soft);
-  border-color: var(--accent-plum);
+  background: var(--gradient-editorial);
+  border-color: rgba(68, 51, 112, 0.22);
 }
 
 .roadmap-list--grid .day-card-node {
@@ -660,15 +667,15 @@
 }
 
 .day-card-title {
-  font-size: 0.90625rem;
+  font-size: 0.9375rem;
   font-weight: 500;
-  line-height: 1.38;
+  line-height: var(--leading-figma);
   letter-spacing: -0.01em;
   color: var(--ink-primary);
 }
 
 .day-card--selected .day-card-title {
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .day-card-cta {
@@ -707,7 +714,7 @@
   display: flex;
   flex-direction: column;
   border-radius: var(--radius-lg);
-  background-color: var(--surface-stone);
+  background-color: var(--surface-inspector);
   border: 1px solid var(--border-hairline);
   overflow: hidden;
   transition: all var(--duration-normal) var(--ease-standard);
@@ -797,6 +804,7 @@
 .inspector-kicker {
   font-size: 0.9375rem;
   font-weight: 500;
+  line-height: var(--leading-figma);
   color: var(--ink-primary);
 }
 
@@ -806,6 +814,7 @@
   align-items: center;
   gap: 6px;
   font-size: 0.75rem;
+  line-height: var(--leading-figma);
   color: var(--ink-muted);
 }
 
@@ -872,13 +881,14 @@
 .inspector-title {
   font-size: 1.25rem;
   font-weight: 500;
-  line-height: 1.25;
+  line-height: var(--leading-figma);
   letter-spacing: -0.02em;
   color: var(--ink-primary);
 }
 
 .day-inspector.is-expanded .inspector-title {
   font-size: 1.625rem;
+  line-height: var(--leading-figma);
   max-width: 780px;
 }
 
@@ -960,7 +970,7 @@
 /* Script Breakdown Cards */
 .hook-card {
   position: relative;
-  padding: 14px 16px;
+  padding: 15px 16px;
   border-radius: var(--radius-md);
   background-color: var(--surface-lavender);
   display: flex;
@@ -990,12 +1000,13 @@
 .hook-box {
   font-size: 0.9375rem;
   font-weight: 500;
-  line-height: 1.45;
+  line-height: var(--leading-figma);
   color: var(--ink-primary);
 }
 
 .hook-screen-cue {
   font-size: 0.72rem;
+  line-height: var(--leading-figma);
   color: var(--ink-secondary);
 }
 
@@ -1008,7 +1019,7 @@
 
 .script-part-text {
   font-size: 0.84375rem;
-  line-height: 1.55;
+  line-height: var(--leading-figma);
   color: var(--ink-primary);
   white-space: pre-wrap;
 }
@@ -1020,7 +1031,7 @@
   background-color: var(--surface-canvas);
   font-family: var(--font-sans);
   font-size: 0.8125rem;
-  line-height: 1.55;
+  line-height: var(--leading-figma);
   color: var(--ink-primary);
   white-space: pre-wrap;
 }
@@ -1069,7 +1080,7 @@
   background-color: var(--surface-canvas);
   border: 1px dashed var(--border-strong);
   font-size: 0.62rem;
-  line-height: 1.25;
+  line-height: var(--leading-figma);
   text-align: center;
   color: var(--ink-primary);
   display: -webkit-box;
@@ -1094,7 +1105,7 @@
 
 .visual-composition-tip {
   font-size: 0.78rem;
-  line-height: 1.5;
+  line-height: var(--leading-figma);
   color: var(--ink-secondary);
 }
 
@@ -1113,7 +1124,7 @@
   border: 1px solid var(--border-hairline);
   background-color: var(--surface-canvas);
   font-size: 0.84375rem;
-  line-height: 1.55;
+  line-height: var(--leading-figma);
   white-space: pre-wrap;
   color: var(--ink-primary);
 }

@@ -187,9 +187,9 @@
 }
 
 .md-status-chip--live {
-  background-color: var(--status-live-bg);
-  border-color: transparent;
-  color: var(--status-live-fg);
+  background-color: var(--surface-canvas);
+  border-color: var(--border-hairline);
+  color: var(--ink-secondary);
 }
 
 .md-status-chip--live::before {
@@ -197,9 +197,9 @@
 }
 
 .md-status-chip--simulated {
-  background-color: var(--status-warn-bg);
-  border-color: transparent;
-  color: var(--status-warn-fg);
+  background-color: var(--surface-canvas);
+  border-color: var(--border-hairline);
+  color: var(--ink-secondary);
 }
 
 .md-status-chip--simulated::before {
