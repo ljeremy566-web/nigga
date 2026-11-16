@@ -1,11 +1,16 @@
 import {
   cacheDom,
   deleteDayDraft,
+  deleteIgDayDraft,
   dom,
   getEffectiveDayItem,
+  getEffectiveIgDayItem,
+  getFilteredIgRoadmap,
   getFilteredRoadmap,
+  getSelectedRawIgItem,
   getSelectedRawItem,
   saveDayDraft,
+  saveIgDayDraft,
   state,
 } from './state.js';
 import {
@@ -25,12 +30,19 @@ import { initConfirmDialog, openConfirmDialog } from './ui/dialog.js';
 import { showToast } from './ui/snackbar.js';
 import { transitionSwap } from './ui/motion.js';
 import {
+  captureIgReelsPayload,
+  deleteIgReelByShortcode,
+  executeGenerateIgRoadmap,
   executeGenerateRoadmap,
   executeOracleRun,
   fetchHealth,
+  fetchIgReels,
+  fetchIgRoadmap,
+  fetchIgStatus,
   fetchOracleStatus,
   fetchRoadmap,
   fetchStoredVideosQuietly,
+  handleIgStatusChange,
   handleStatusChange,
   handleYoutubeSearch,
   loadYoutubeTabData,
@@ -45,14 +57,33 @@ import {
   syncResponsiveInspector,
   updatePrevNextButtons,
 } from './views/day-inspector.js';
+import {
+  buildAntigravityBrowserPrompt,
+  renderIgReelsGrid,
+} from './views/ig-reels-view.js';
+import {
+  closeMobileIgInspector,
+  openMobileIgInspector,
+  renderIgInspectorNow,
+  renderIgProgressAndCounters,
+  renderIgRoadmapList,
+  setIgInspectorExpanded,
+  setIgInspectorTab,
+  syncResponsiveIgInspector,
+  updateIgPrevNextButtons,
+} from './views/ig-roadmap-view.js';
 
-const VALID_TABS = ['roadmap', 'youtube', 'oracle'];
+const VALID_TABS = ['roadmap', 'youtube', 'ig-reels', 'ig-roadmap', 'oracle'];
 const BREADCRUMB_TITLES = {
   roadmap: 'Roadmap de contenido',
   youtube: 'YouTube Research',
+  'ig-reels': 'IG Reels Research',
+  'ig-roadmap': 'Roadmap IG',
   oracle: 'Oráculo IA & Fuentes',
 };
 let searchDebounceTimer = null;
+let igSearchDebounceTimer = null;
+let igReelsSearchDebounceTimer = null;
 
 function parseTabFromHash(hashString) {
   const cleaned = String(hashString || '')
@@ -67,6 +98,9 @@ export async function switchTab(nextTab, { updateHash = true } = {}) {
 
   if (state.isDrawerOpen) {
     closeMobileInspector({ restoreFocus: false });
+  }
+  if (state.igIsDrawerOpen) {
+    closeMobileIgInspector({ restoreFocus: false });
   }
 
   document.querySelectorAll('.tab-btn[data-tab]').forEach((btn) => {
@@ -106,9 +140,24 @@ export async function switchTab(nextTab, { updateHash = true } = {}) {
 
   if (targetTab === 'youtube') {
     await loadYoutubeTabData(false);
+  } else if (targetTab === 'ig-reels') {
+    await fetchIgReels(false);
+  } else if (targetTab === 'ig-roadmap') {
+    syncResponsiveIgInspector();
+    if (!state.igReelsTabLoaded) {
+      await fetchIgReels(false);
+    }
+    if (state.igRoadmap.length === 0 && !state.loading.igRoadmap) {
+      await fetchIgRoadmap(dom.igRoadmapNicheInput?.value.trim() || state.igNiche);
+    } else {
+      renderIgProgressAndCounters();
+      renderIgRoadmapList();
+      renderIgInspectorNow(getSelectedRawIgItem());
+    }
   } else if (targetTab === 'oracle' && changed) {
     fetchHealth();
     fetchOracleStatus();
+    fetchIgStatus();
   }
 }
 
@@ -121,21 +170,21 @@ export async function selectDay(dayNumber, options = {}) {
   const targetWeek = item.week_number || Math.min(4, Math.ceil(item.day_number / 7));
   if (!state.expandedWeeks.has(targetWeek)) {
     state.expandedWeeks.add(targetWeek);
-    const groupEl = document.querySelector(`.week-group[data-week-group="${targetWeek}"]`);
+    const groupEl = dom.roadmapList?.querySelector(`.week-group[data-week-group="${targetWeek}"]`);
     if (groupEl) {
       groupEl.classList.remove('is-collapsed');
       groupEl.querySelector('.week-header')?.setAttribute('aria-expanded', 'true');
     }
   }
 
-  document.querySelectorAll('.day-card').forEach((card) => {
+  dom.roadmapList?.querySelectorAll('.day-card').forEach((card) => {
     const cardDay = Number(card.getAttribute('data-day'));
     const isSelected = cardDay === state.selectedDay;
     card.classList.toggle('day-card--selected', isSelected);
     card.setAttribute('aria-current', isSelected ? 'true' : 'false');
   });
 
-  document.querySelectorAll('[data-dot-day]').forEach((dot) => {
+  dom.dayDotsStrip?.querySelectorAll('[data-dot-day]').forEach((dot) => {
     const dotDay = Number(dot.getAttribute('data-dot-day'));
     dot.classList.toggle('is-active', dotDay === state.selectedDay);
   });
@@ -155,6 +204,49 @@ export async function selectDay(dayNumber, options = {}) {
   }
 }
 
+export async function selectIgDay(dayNumber, options = {}) {
+  const item = state.igRoadmap.find((d) => d.day_number === Number(dayNumber));
+  if (!item) return;
+  state.igSelectedDay = item.day_number;
+  state.igIsEditingDraft = false;
+
+  const targetWeek = item.week_number || Math.min(4, Math.ceil(item.day_number / 7));
+  if (!state.igExpandedWeeks.has(targetWeek)) {
+    state.igExpandedWeeks.add(targetWeek);
+    const groupEl = dom.igRoadmapList?.querySelector(`.week-group[data-week-group="${targetWeek}"]`);
+    if (groupEl) {
+      groupEl.classList.remove('is-collapsed');
+      groupEl.querySelector('.week-header')?.setAttribute('aria-expanded', 'true');
+    }
+  }
+
+  dom.igRoadmapList?.querySelectorAll('.ig-day-card').forEach((card) => {
+    const cardDay = Number(card.getAttribute('data-ig-day'));
+    const isSelected = cardDay === state.igSelectedDay;
+    card.classList.toggle('ig-day-card--selected', isSelected);
+    card.setAttribute('aria-current', isSelected ? 'true' : 'false');
+  });
+
+  dom.igDayDotsStrip?.querySelectorAll('[data-ig-dot-day]').forEach((dot) => {
+    const dotDay = Number(dot.getAttribute('data-ig-dot-day'));
+    dot.classList.toggle('is-active', dotDay === state.igSelectedDay);
+  });
+
+  if (options.expandInspector && isDesktop()) {
+    setIgInspectorExpanded(true);
+  }
+
+  if (options.openDrawer && !isDesktop()) {
+    openMobileIgInspector(options.triggerEl);
+  }
+
+  if (options.immediate) {
+    renderIgInspectorNow(item);
+  } else {
+    await transitionSwap(dom.igDayInspectorContent, () => renderIgInspectorNow(item));
+  }
+}
+
 function stepDay(delta) {
   const filtered = getFilteredRoadmap();
   const list = filtered.length > 0 ? filtered : state.roadmap;
@@ -164,6 +256,18 @@ function stepDay(delta) {
   const target = list[nextIdx];
   if (target && target.day_number !== state.selectedDay) {
     selectDay(target.day_number, { immediate: true });
+  }
+}
+
+function stepIgDay(delta) {
+  const filtered = getFilteredIgRoadmap();
+  const list = filtered.length > 0 ? filtered : state.igRoadmap;
+  if (list.length === 0) return;
+  const idx = list.findIndex((d) => d.day_number === state.igSelectedDay);
+  const nextIdx = idx === -1 ? 0 : Math.max(0, Math.min(list.length - 1, idx + delta));
+  const target = list[nextIdx];
+  if (target && target.day_number !== state.igSelectedDay) {
+    selectIgDay(target.day_number, { immediate: true });
   }
 }
 
@@ -248,6 +352,60 @@ function downloadJSON() {
   showToast('JSON exportado con éxito.', 'success');
 }
 
+function downloadIgCSV() {
+  const effectiveItems = state.igRoadmap.map(getEffectiveIgDayItem);
+  if (effectiveItems.length === 0) {
+    showToast('No hay días IG para exportar.', 'error');
+    return;
+  }
+  const headers = [
+    'Día', 'Semana', 'Nicho', 'Pilar', 'Formato', 'Título',
+    'Gancho', 'Guion', 'Prompt_Imagen', 'Caption', 'Hashtags',
+    'Referencia_Reel_IG', 'Estado', 'Editado_Localmente',
+  ];
+  const rows = effectiveItems.map((d) =>
+    [
+      d.day_number,
+      d.week_number,
+      d.niche,
+      d.content_pillar,
+      d.format,
+      d.title,
+      d.hook,
+      d.script,
+      d.image_prompt,
+      d.caption,
+      (d.hashtags || []).join(' '),
+      d.reference_reel_url || d.reference_reel_shortcode || '',
+      d.status,
+      d.isEditedLocally ? 'Sí' : 'No',
+    ]
+      .map(csvEscape)
+      .join(',')
+  );
+  const csvContent = '\uFEFF' + [headers.map(csvEscape).join(','), ...rows].join('\r\n');
+  triggerDownload(
+    csvContent,
+    'text/csv;charset=utf-8;',
+    `roadmap_ig_30_dias_${slugify(state.igNiche)}.csv`
+  );
+  showToast('CSV de Roadmap IG exportado con éxito.', 'success');
+}
+
+function downloadIgJSON() {
+  const effectiveItems = state.igRoadmap.map(getEffectiveIgDayItem);
+  if (effectiveItems.length === 0) {
+    showToast('No hay días IG para exportar.', 'error');
+    return;
+  }
+  triggerDownload(
+    JSON.stringify(effectiveItems, null, 2),
+    'application/json;charset=utf-8;',
+    `roadmap_ig_30_dias_${slugify(state.igNiche)}.json`
+  );
+  showToast('JSON de Roadmap IG exportado con éxito.', 'success');
+}
+
 function resetFilters() {
   if (searchDebounceTimer) {
     clearTimeout(searchDebounceTimer);
@@ -266,6 +424,24 @@ function resetFilters() {
   updatePrevNextButtons();
 }
 
+function resetIgFilters() {
+  if (igSearchDebounceTimer) {
+    clearTimeout(igSearchDebounceTimer);
+    igSearchDebounceTimer = null;
+  }
+  state.igFilters = { week: 'all', format: 'all', status: 'all', query: '' };
+  if (dom.searchIgRoadmapInput) dom.searchIgRoadmapInput.value = '';
+  if (dom.igFormatFilterSelect) dom.igFormatFilterSelect.value = 'all';
+  if (dom.igStatusFilterSelect) dom.igStatusFilterSelect.value = 'all';
+  dom.igWeekFilterGroup?.querySelectorAll('[data-ig-week]').forEach((btn) => {
+    const isAll = btn.getAttribute('data-ig-week') === 'all';
+    btn.classList.toggle('is-active', isAll);
+    btn.setAttribute('aria-pressed', isAll ? 'true' : 'false');
+  });
+  renderIgRoadmapList();
+  updateIgPrevNextButtons();
+}
+
 async function promptGenerateRoadmap(customNiche) {
   if (state.loading.generate) return;
   const niche = (customNiche ?? dom.nicheInput?.value ?? DEFAULT_NICHE).trim() || DEFAULT_NICHE;
@@ -277,6 +453,34 @@ async function promptGenerateRoadmap(customNiche) {
   });
   if (!confirmed) return;
   await executeGenerateRoadmap(niche);
+}
+
+async function promptGenerateIgRoadmap(customNiche, customSourceQuery) {
+  if (state.loading.igGenerate) return;
+  const niche =
+    (customNiche ?? dom.igRoadmapNicheInput?.value ?? state.igNiche ?? DEFAULT_NICHE).trim() ||
+    DEFAULT_NICHE;
+  const sourceQuery =
+    customSourceQuery ??
+    (dom.igRoadmapSourceSelect?.value && dom.igRoadmapSourceSelect.value !== 'all'
+      ? dom.igRoadmapSourceSelect.value
+      : undefined);
+
+  const count = sourceQuery
+    ? state.igReels.filter((r) => r.sourceQuery === sourceQuery).length
+    : state.igReels.length;
+
+  const confirmed = await openConfirmDialog({
+    title: 'Generar Roadmap IG de 30 días',
+    body:
+      count > 0
+        ? `Se creará un Roadmap IG independiente de 30 días para "${niche}" usando ${count} Reels capturados de Instagram${sourceQuery ? ` ("${sourceQuery}")` : ''}. Tu roadmap principal de YouTube no se verá afectado.`
+        : `Aún no hay Reels capturados para esta fuente. ¿Deseas generar un Roadmap IG base de 30 días para "${niche}"? (Puedes capturar Reels reales en "IG Reels" después.)`,
+    confirmLabel: 'Generar 30 días IG',
+    cancelLabel: 'Cancelar',
+  });
+  if (!confirmed) return;
+  await executeGenerateIgRoadmap(niche, sourceQuery || 'all');
 }
 
 async function promptOracleRun() {
@@ -312,6 +516,27 @@ async function promptResetDraft() {
   renderRoadmapList();
   renderInspectorNow(item);
   showToast(`Día ${padDay(item.day_number)} restaurado al original.`, 'info');
+}
+
+async function promptResetIgDraft() {
+  const item = getSelectedRawIgItem();
+  if (!item) return;
+  const effective = getEffectiveIgDayItem(item);
+  if (!effective.isEditedLocally) return;
+
+  const confirmed = await openConfirmDialog({
+    title: `Restaurar Día IG ${padDay(item.day_number)} al original`,
+    body: 'Se eliminarán los cambios guardados localmente en este navegador para este día IG.',
+    confirmLabel: 'Restaurar original',
+    cancelLabel: 'Cancelar',
+  });
+  if (!confirmed) return;
+
+  deleteIgDayDraft(item);
+  state.igIsEditingDraft = false;
+  renderIgRoadmapList();
+  renderIgInspectorNow(item);
+  showToast(`Día IG ${padDay(item.day_number)} restaurado al original.`, 'info');
 }
 
 async function promptUseTopicInRoadmap(topic) {
@@ -354,6 +579,7 @@ function bindEvents() {
     }
   }, { passive: true });
 
+  // ----- Roadmap Principal (YouTube + Oráculo) -----
   dom.btnLoadRoadmap?.addEventListener('click', () => {
     fetchRoadmap(dom.nicheInput?.value.trim() || DEFAULT_NICHE);
   });
@@ -613,6 +839,7 @@ function bindEvents() {
     showToast(`Borrador local guardado para el Día ${padDay(item.day_number)}.`, 'success');
   });
 
+  // ----- YouTube Research -----
   dom.ytSearchForm?.addEventListener('submit', (e) => {
     e.preventDefault();
     handleYoutubeSearch(dom.ytSearchInput.value, dom.ytMaxResultsSelect.value);
@@ -635,11 +862,365 @@ function bindEvents() {
   dom.ytResultsList?.addEventListener('click', handleUseTopicClick);
   dom.ytVideosGrid?.addEventListener('click', handleUseTopicClick);
 
+  // ----- IG Reels Research -----
+  const applyIgReelsSearch = (val) => {
+    state.igReelsFilters.query = val;
+    renderIgReelsGrid();
+  };
+
+  dom.igReelsFilterInput?.addEventListener('input', (e) => {
+    const val = e.target.value;
+    if (igReelsSearchDebounceTimer) clearTimeout(igReelsSearchDebounceTimer);
+    if (val === '') {
+      applyIgReelsSearch('');
+      return;
+    }
+    igReelsSearchDebounceTimer = setTimeout(() => {
+      igReelsSearchDebounceTimer = null;
+      applyIgReelsSearch(val);
+    }, 35);
+  });
+
+  dom.igReelsFilterInput?.addEventListener('change', (e) => {
+    if (igReelsSearchDebounceTimer) {
+      clearTimeout(igReelsSearchDebounceTimer);
+      igReelsSearchDebounceTimer = null;
+    }
+    applyIgReelsSearch(e.target.value);
+  });
+
+  dom.igReelsAuthorFilter?.addEventListener('change', (e) => {
+    state.igReelsFilters.author = e.target.value;
+    renderIgReelsGrid();
+  });
+
+  dom.btnRefreshIgReels?.addEventListener('click', () => {
+    fetchIgReels(true);
+  });
+
+  dom.btnCopyBrowserPrompt?.addEventListener('click', () => {
+    const promptText = buildAntigravityBrowserPrompt(
+      window.location.origin,
+      dom.igRoadmapNicheInput?.value.trim() || state.igNiche
+    );
+    copyText(promptText, 'Prompt para Antigravity Browser');
+  });
+
+  dom.btnToggleIgImport?.addEventListener('click', () => {
+    dom.igImportPanel?.classList.toggle('hidden');
+  });
+
+  dom.igImportForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const ok = await captureIgReelsPayload(
+      dom.igImportJsonInput?.value,
+      dom.igImportSourceInput?.value.trim()
+    );
+    if (ok) {
+      if (dom.igImportJsonInput) dom.igImportJsonInput.value = '';
+      dom.igImportPanel?.classList.add('hidden');
+    }
+  });
+
+  dom.igReelsGrid?.addEventListener('click', async (e) => {
+    const delBtn = e.target.closest('[data-delete-ig-reel]');
+    if (delBtn) {
+      const shortcode = delBtn.getAttribute('data-delete-ig-reel');
+      if (!shortcode) return;
+      const confirmed = await openConfirmDialog({
+        title: `Eliminar Reel ${shortcode}`,
+        body: 'Se quitará este Reel capturado del catálogo de Instagram.',
+        confirmLabel: 'Eliminar',
+        cancelLabel: 'Cancelar',
+      });
+      if (confirmed) {
+        await deleteIgReelByShortcode(shortcode);
+      }
+      return;
+    }
+
+    const useBtn = e.target.closest('[data-use-ig-reel-query]');
+    if (useBtn) {
+      const sourceQuery = useBtn.getAttribute('data-use-ig-reel-query') || '';
+      if (sourceQuery) {
+        state.igSourceQueryFilter = sourceQuery;
+      }
+      await switchTab('ig-roadmap');
+      if (dom.igRoadmapSourceSelect && sourceQuery) {
+        const hasOption = Array.from(dom.igRoadmapSourceSelect.options).some(
+          (opt) => opt.value === sourceQuery
+        );
+        if (hasOption) dom.igRoadmapSourceSelect.value = sourceQuery;
+      }
+      promptGenerateIgRoadmap(
+        dom.igRoadmapNicheInput?.value.trim() || state.igNiche,
+        sourceQuery || 'all'
+      );
+    }
+  });
+
+  dom.btnGoGenerateIgRoadmap?.addEventListener('click', async () => {
+    await switchTab('ig-roadmap');
+    promptGenerateIgRoadmap();
+  });
+
+  // ----- Roadmap IG Independiente -----
+  dom.btnLoadIgRoadmap?.addEventListener('click', () => {
+    fetchIgRoadmap(dom.igRoadmapNicheInput?.value.trim() || DEFAULT_NICHE);
+  });
+
+  dom.igRoadmapNicheInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      fetchIgRoadmap(dom.igRoadmapNicheInput.value.trim() || DEFAULT_NICHE);
+    }
+  });
+
+  dom.btnOpenIgCaptureTab?.addEventListener('click', () => {
+    switchTab('ig-reels');
+  });
+
+  dom.btnGenerateIgRoadmap?.addEventListener('click', () => {
+    promptGenerateIgRoadmap();
+  });
+
+  dom.btnIgEmptyGenerate?.addEventListener('click', () => {
+    promptGenerateIgRoadmap();
+  });
+
+  dom.igRoadmapSourceSelect?.addEventListener('change', (e) => {
+    state.igSourceQueryFilter = e.target.value;
+  });
+
+  dom.btnExportIgCsv?.addEventListener('click', downloadIgCSV);
+  dom.btnExportIgJson?.addEventListener('click', downloadIgJSON);
+
+  dom.igWeekFilterGroup?.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-ig-week]');
+    if (!btn) return;
+    const weekVal = btn.getAttribute('data-ig-week');
+    state.igFilters.week = weekVal === 'all' ? 'all' : Number(weekVal);
+    dom.igWeekFilterGroup.querySelectorAll('[data-ig-week]').forEach((b) => {
+      const active = b === btn;
+      b.classList.toggle('is-active', active);
+      b.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+    renderIgRoadmapList();
+    updateIgPrevNextButtons();
+  });
+
+  dom.igFormatFilterSelect?.addEventListener('change', (e) => {
+    state.igFilters.format = e.target.value;
+    renderIgRoadmapList();
+    updateIgPrevNextButtons();
+  });
+
+  dom.igStatusFilterSelect?.addEventListener('change', (e) => {
+    state.igFilters.status = e.target.value;
+    renderIgRoadmapList();
+    updateIgPrevNextButtons();
+  });
+
+  const applyIgSearchFilter = (val) => {
+    state.igFilters.query = val;
+    renderIgRoadmapList();
+    updateIgPrevNextButtons();
+  };
+
+  dom.searchIgRoadmapInput?.addEventListener('input', (e) => {
+    const val = e.target.value;
+    if (igSearchDebounceTimer) clearTimeout(igSearchDebounceTimer);
+    if (val === '') {
+      applyIgSearchFilter('');
+      return;
+    }
+    igSearchDebounceTimer = setTimeout(() => {
+      igSearchDebounceTimer = null;
+      applyIgSearchFilter(val);
+    }, 35);
+  });
+
+  dom.searchIgRoadmapInput?.addEventListener('change', (e) => {
+    if (igSearchDebounceTimer) {
+      clearTimeout(igSearchDebounceTimer);
+      igSearchDebounceTimer = null;
+    }
+    applyIgSearchFilter(e.target.value);
+  });
+
+  dom.igViewModeGrid?.addEventListener('click', () => {
+    if (state.igViewMode === 'grid') return;
+    state.igViewMode = 'grid';
+    dom.igViewModeGrid.classList.add('is-active');
+    dom.igViewModeGrid.setAttribute('aria-pressed', 'true');
+    dom.igViewModeTimeline.classList.remove('is-active');
+    dom.igViewModeTimeline.setAttribute('aria-pressed', 'false');
+    renderIgRoadmapList();
+  });
+
+  dom.igViewModeTimeline?.addEventListener('click', () => {
+    if (state.igViewMode === 'timeline') return;
+    state.igViewMode = 'timeline';
+    dom.igViewModeTimeline.classList.add('is-active');
+    dom.igViewModeTimeline.setAttribute('aria-pressed', 'true');
+    dom.igViewModeGrid.classList.remove('is-active');
+    dom.igViewModeGrid.setAttribute('aria-pressed', 'false');
+    renderIgRoadmapList();
+  });
+
+  dom.btnResetIgFilters?.addEventListener('click', resetIgFilters);
+  dom.btnIgEmptyResetFilters?.addEventListener('click', resetIgFilters);
+
+  dom.igDayDotsStrip?.addEventListener('click', (e) => {
+    const dot = e.target.closest('[data-ig-dot-day]');
+    if (!dot) return;
+    const dayNum = Number(dot.getAttribute('data-ig-dot-day'));
+    selectIgDay(dayNum, { openDrawer: true, triggerEl: dot });
+  });
+
+  dom.igRoadmapList?.addEventListener('click', (e) => {
+    const weekBtn = e.target.closest('[data-ig-toggle-week]');
+    if (weekBtn) {
+      const weekNum = Number(weekBtn.getAttribute('data-ig-toggle-week'));
+      const groupEl = weekBtn.closest('.week-group');
+      if (state.igExpandedWeeks.has(weekNum)) {
+        state.igExpandedWeeks.delete(weekNum);
+        groupEl?.classList.add('is-collapsed');
+        weekBtn.setAttribute('aria-expanded', 'false');
+      } else {
+        state.igExpandedWeeks.add(weekNum);
+        groupEl?.classList.remove('is-collapsed');
+        weekBtn.setAttribute('aria-expanded', 'true');
+      }
+      return;
+    }
+
+    const expandTrigger = e.target.closest('[data-ig-expand-day]');
+    if (expandTrigger) {
+      e.stopPropagation();
+      const dayNum = Number(expandTrigger.getAttribute('data-ig-expand-day'));
+      selectIgDay(dayNum, { openDrawer: true, expandInspector: true, triggerEl: expandTrigger });
+      return;
+    }
+
+    const card = e.target.closest('.ig-day-card[data-ig-day]');
+    if (!card) return;
+    const dayNum = Number(card.getAttribute('data-ig-day'));
+    selectIgDay(dayNum, { openDrawer: true, triggerEl: card });
+  });
+
+  dom.igRoadmapList?.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const card = e.target.closest('.ig-day-card[data-ig-day]');
+    if (!card || e.target !== card) return;
+    e.preventDefault();
+    const dayNum = Number(card.getAttribute('data-ig-day'));
+    selectIgDay(dayNum, { openDrawer: true, triggerEl: card });
+  });
+
+  dom.btnIgExpandInspector?.addEventListener('click', () => {
+    setIgInspectorExpanded(!state.igIsInspectorExpanded);
+  });
+
+  dom.igInspectorSubtabs?.addEventListener('click', (e) => {
+    const tabBtn = e.target.closest('[data-ig-inspector-tab]');
+    if (!tabBtn) return;
+    setIgInspectorTab(tabBtn.getAttribute('data-ig-inspector-tab'));
+  });
+
+  dom.btnIgPrevDay?.addEventListener('click', () => stepIgDay(-1));
+  dom.btnIgNextDay?.addEventListener('click', () => stepIgDay(1));
+  dom.btnIgCloseDrawer?.addEventListener('click', () => closeMobileIgInspector({ restoreFocus: true }));
+  dom.igInspectorBackdrop?.addEventListener('click', () => closeMobileIgInspector({ restoreFocus: true }));
+
+  dom.igInspectorStatusSelect?.addEventListener('change', (e) => {
+    handleIgStatusChange(state.igSelectedDay, e.target.value);
+  });
+
+  dom.igInspectorStatusGroup?.addEventListener('click', (e) => {
+    const btn = e.target.closest('.status-btn[data-status]');
+    if (!btn) return;
+    handleIgStatusChange(state.igSelectedDay, btn.getAttribute('data-status'));
+  });
+
+  dom.btnIgCopyHook?.addEventListener('click', () =>
+    copyText(dom.igInspectorHook.textContent, 'Gancho IG')
+  );
+  dom.btnIgCopyPrompt?.addEventListener('click', () =>
+    copyText(dom.igInspectorImagePrompt.textContent, 'Prompt de imagen IG')
+  );
+  dom.btnIgCopyScript?.addEventListener('click', () =>
+    copyText(dom.igInspectorScript.textContent, 'Guion IG')
+  );
+  dom.btnIgCopyCaption?.addEventListener('click', () => {
+    const tags = Array.from(dom.igInspectorHashtags.querySelectorAll('.badge'))
+      .map((el) => el.textContent.trim())
+      .filter(Boolean)
+      .join(' ');
+    const captionText = dom.igInspectorCaption.textContent.trim();
+    const full = tags ? `${captionText}\n\n${tags}` : captionText;
+    copyText(full, 'Caption IG');
+  });
+
+  dom.btnIgOtherSuggestion?.addEventListener('click', () => {
+    const list = state.igRoadmap;
+    if (!list || list.length === 0) return;
+    const nextDay = (state.igSelectedDay % list.length) + 1;
+    selectIgDay(nextDay, { immediate: false });
+    showToast(`Mostrando sugerencia IG del Día ${padDay(nextDay)}.`, 'info');
+  });
+
+  dom.btnIgToggleEditMode?.addEventListener('click', () => {
+    const item = getSelectedRawIgItem();
+    if (!item) return;
+    state.igIsEditingDraft = !state.igIsEditingDraft;
+    renderIgInspectorNow(item);
+  });
+
+  dom.btnIgCancelDraft?.addEventListener('click', () => {
+    const item = getSelectedRawIgItem();
+    state.igIsEditingDraft = false;
+    renderIgInspectorNow(item);
+  });
+
+  dom.btnIgResetDraft?.addEventListener('click', () => {
+    promptResetIgDraft();
+  });
+
+  dom.igDraftEditorForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const item = getSelectedRawIgItem();
+    if (!item) return;
+    saveIgDayDraft(item, {
+      hook: dom.igEditHookInput.value,
+      image_prompt: dom.igEditPromptInput.value,
+      script: dom.igEditScriptInput.value,
+      caption: dom.igEditCaptionInput.value,
+    });
+    state.igIsEditingDraft = false;
+    renderIgRoadmapList();
+    renderIgInspectorNow(item);
+    showToast(`Borrador IG guardado para el Día ${padDay(item.day_number)}.`, 'success');
+  });
+
+  // ----- Navegación por teclado y responsive -----
   document.addEventListener('keydown', (e) => {
     if (dom.m3ConfirmDialog && !dom.m3ConfirmDialog.classList.contains('hidden')) {
       return;
     }
     if (e.key === 'Escape') {
+      if (state.activeTab === 'ig-roadmap') {
+        if (state.igIsDrawerOpen && !isDesktop()) {
+          e.preventDefault();
+          closeMobileIgInspector({ restoreFocus: true });
+          return;
+        }
+        if (state.igIsInspectorExpanded && isDesktop()) {
+          e.preventDefault();
+          setIgInspectorExpanded(false);
+          return;
+        }
+      }
       if (state.isDrawerOpen && !isDesktop()) {
         e.preventDefault();
         closeMobileInspector({ restoreFocus: true });
@@ -651,18 +1232,27 @@ function bindEvents() {
         return;
       }
     }
-    if (state.activeTab !== 'roadmap') return;
     const tag = document.activeElement?.tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-    if (e.key === 'ArrowLeft') stepDay(-1);
-    if (e.key === 'ArrowRight') stepDay(1);
+    if (state.activeTab === 'roadmap') {
+      if (e.key === 'ArrowLeft') stepDay(-1);
+      if (e.key === 'ArrowRight') stepDay(1);
+    } else if (state.activeTab === 'ig-roadmap') {
+      if (e.key === 'ArrowLeft') stepIgDay(-1);
+      if (e.key === 'ArrowRight') stepIgDay(1);
+    }
   });
+
+  const handleViewportChange = () => {
+    syncResponsiveInspector();
+    syncResponsiveIgInspector();
+  };
 
   const desktopMq = getDesktopMediaQuery();
   if (desktopMq && typeof desktopMq.addEventListener === 'function') {
-    desktopMq.addEventListener('change', syncResponsiveInspector);
+    desktopMq.addEventListener('change', handleViewportChange);
   }
-  window.addEventListener('resize', syncResponsiveInspector);
+  window.addEventListener('resize', handleViewportChange);
 }
 
 async function boot() {
@@ -672,6 +1262,7 @@ async function boot() {
   initConfirmDialog();
   bindEvents();
   syncResponsiveInspector();
+  syncResponsiveIgInspector();
 
   const initialHashTab = parseTabFromHash(window.location.hash);
   if (initialHashTab && initialHashTab !== 'roadmap') {
@@ -683,6 +1274,7 @@ async function boot() {
     fetchRoadmap(initialNiche),
     fetchHealth(),
     fetchOracleStatus(),
+    fetchIgStatus(),
     fetchStoredVideosQuietly(),
   ]);
 

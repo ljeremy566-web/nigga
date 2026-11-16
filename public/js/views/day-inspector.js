@@ -11,6 +11,7 @@ import {
   padDay,
   prefersReducedMotion,
 } from '../utils.js';
+import { parseScriptSegments } from './roadmap-shared.js';
 
 function getFocusableInspectorElements() {
   if (!dom.dayInspector) return [];
@@ -50,59 +51,6 @@ function handleMobileInspectorKeydown(e) {
   }
 }
 
-function parseScriptSegments(rawScript, title) {
-  const script = String(rawScript || '').trim();
-  if (!script) {
-    return {
-      screenCue: title ? `Texto en pantalla: "${title}"` : '',
-      development: '—',
-      closing: '—',
-    };
-  }
-
-  const lines = script.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
-  const devLines = [];
-  const closeLines = [];
-  let bucket = 'dev';
-
-  lines.forEach((line, idx) => {
-    const cleanLine = line.replace(/^\[[^\]]+\]\s*/i, '').trim();
-    const isHookTimestamp = /^\[?0:00/i.test(line) || /\bgancho\b/i.test(line);
-    const isClosingMarker = /^\[?(0:2[5-9]|0:3\d|cierre|cta)\b/i.test(line) || /\b(comenta|guarda|sígueme|escribe|dm)\b/i.test(line);
-    const isDevMarker = /^\[?0:0[3-9]|^\[?0:1\d|^\[?0:2[0-4]|\b(desarrollo|cuerpo|valor)\b/i.test(line);
-
-    if (idx === 0 && isHookTimestamp && lines.length > 1) {
-      bucket = 'hook';
-      return;
-    }
-    if (isClosingMarker) {
-      bucket = 'close';
-      const stripped = cleanLine.replace(/^(cierre|cta)\s*:\s*/i, '').trim();
-      if (stripped) closeLines.push(stripped);
-      return;
-    }
-    if (isDevMarker || bucket === 'hook') {
-      bucket = 'dev';
-      const stripped = cleanLine.replace(/^(desarrollo|cuerpo)\s*:\s*/i, '').trim();
-      if (stripped) devLines.push(stripped);
-      return;
-    }
-    if (cleanLine) {
-      if (bucket === 'close') closeLines.push(cleanLine);
-      else devLines.push(cleanLine);
-    }
-  });
-
-  const shortTitle = String(title || '').split(/[.,:]/)[0].trim();
-  const screenCue = shortTitle ? `Texto en pantalla: "${shortTitle}"` : '';
-
-  return {
-    screenCue,
-    development: devLines.length > 0 ? devLines.join('\n') : script,
-    closing: closeLines.length > 0 ? closeLines.join('\n') : 'Guarda esta pieza y cuéntame qué paso aplicarás hoy.',
-  };
-}
-
 export function setInspectorTab(tabName) {
   const valid = ['script', 'visual', 'caption'];
   const next = valid.includes(tabName) ? tabName : 'script';
@@ -114,7 +62,7 @@ export function setInspectorTab(tabName) {
     btn.setAttribute('aria-selected', active ? 'true' : 'false');
   });
 
-  document.querySelectorAll('[data-inspector-panel]').forEach((panel) => {
+  dom.dayInspector?.querySelectorAll('[data-inspector-panel]').forEach((panel) => {
     const active = panel.getAttribute('data-inspector-panel') === next;
     panel.classList.toggle('is-active', active);
   });

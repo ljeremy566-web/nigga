@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="/styles/views/roadmap.css">
   <link rel="stylesheet" href="/styles/views/youtube.css">
   <link rel="stylesheet" href="/styles/views/oracle.css">
+  <link rel="stylesheet" href="/styles/views/instagram.css">
   <script>
     (function () {
       var resolved = 'light';
@@ -58,6 +59,18 @@
                 <span class="material-symbols-rounded icon-sm" aria-hidden="true">video_library</span>
               </span>
               <span class="app-nav__label">YouTube Research</span>
+            </button>
+            <button id="tab-ig-reels" class="app-nav__item tab-btn" role="tab" aria-selected="false" aria-controls="view-ig-reels" data-tab="ig-reels" type="button">
+              <span class="app-nav__indicator">
+                <span class="material-symbols-rounded icon-sm" aria-hidden="true">movie_filter</span>
+              </span>
+              <span class="app-nav__label">IG Reels</span>
+            </button>
+            <button id="tab-ig-roadmap" class="app-nav__item tab-btn" role="tab" aria-selected="false" aria-controls="view-ig-roadmap" data-tab="ig-roadmap" type="button">
+              <span class="app-nav__indicator">
+                <span class="material-symbols-rounded icon-sm" aria-hidden="true">view_timeline</span>
+              </span>
+              <span class="app-nav__label">Roadmap IG</span>
             </button>
             <button id="tab-oracle" class="app-nav__item tab-btn" role="tab" aria-selected="false" aria-controls="view-oracle" data-tab="oracle" type="button">
               <span class="app-nav__indicator">
@@ -545,6 +558,442 @@
           <h2>Catálogo de videos almacenados</h2>
         </div>
         <div id="ytVideosGrid" class="videos-grid"></div>
+      </section>
+
+      <!-- Vista 4: IG Reels Research (Antigravity Browser + CDP + Gemini Vision) -->
+      <section id="view-ig-reels" class="view-panel hidden" role="tabpanel" aria-labelledby="tab-ig-reels">
+        <div class="studio-hero__heading" style="align-items:flex-start;">
+          <h2 class="studio-display-title" style="font-size:1.75rem;">IG Reels Research</h2>
+          <p class="studio-hero__subtitle">Captura Reels reales con Antigravity Browser o CDP local y extrae su gancho visual con Gemini Vision.</p>
+        </div>
+
+        <div class="ig-command-card">
+          <div class="ig-command-row">
+            <div class="field-group">
+              <label class="field-label" for="igReelsFilterInput">Filtrar Reels capturados</label>
+              <input id="igReelsFilterInput" class="input" type="search" placeholder="Buscar por hook, caption, @autor o temática…">
+            </div>
+
+            <div class="field-group">
+              <label class="field-label" for="igReelsAuthorFilter">Cuenta</label>
+              <div class="select-wrap">
+                <select id="igReelsAuthorFilter" class="select">
+                  <option value="all">Todas las cuentas</option>
+                </select>
+                <span class="material-symbols-rounded icon-sm select-chevron" aria-hidden="true">expand_more</span>
+              </div>
+            </div>
+
+            <button id="btnRefreshIgReels" class="md-btn md-btn--outlined" type="button">
+              <span class="material-symbols-rounded icon-sm" aria-hidden="true">sync</span>
+              <span>Actualizar</span>
+            </button>
+
+            <button id="btnGoGenerateIgRoadmap" class="md-btn md-btn--filled" type="button">
+              <span class="material-symbols-rounded icon-sm" aria-hidden="true">auto_awesome</span>
+              <span>Generar Roadmap IG</span>
+            </button>
+          </div>
+
+          <div class="ig-browser-bar">
+            <div class="ig-browser-bar__hint">
+              <span class="material-symbols-rounded icon-sm" aria-hidden="true">photo_camera</span>
+              <span>Usa <strong>Antigravity Browser</strong> (<code>ig-reels-browser-capture</code>) o <code>node scripts/ig-capture-cdp.mjs</code> en tu sesión de IG.</span>
+            </div>
+            <div class="ig-browser-bar__actions">
+              <span id="igReelsCountBadge" class="md-status-chip badge tabular-nums">0 Reels capturados</span>
+              <button id="btnCopyBrowserPrompt" class="md-btn md-btn--outlined md-btn--sm" type="button">
+                <span class="material-symbols-rounded icon-sm" aria-hidden="true">content_copy</span>
+                <span>Copiar prompt Browser</span>
+              </button>
+              <button id="btnToggleIgImport" class="md-btn md-btn--tonal md-btn--sm" type="button">
+                <span class="material-symbols-rounded icon-sm" aria-hidden="true">upload_file</span>
+                <span>Importar captura JSON</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="igImportPanel" class="ig-import-panel hidden">
+            <form id="igImportForm" style="display:flex;flex-direction:column;gap:12px;">
+              <div class="ig-import-grid">
+                <div class="field-group">
+                  <label class="field-label" for="igImportSourceInput">Búsqueda / Cuenta origen</label>
+                  <input id="igImportSourceInput" class="input" type="text" placeholder="Ej. ia productividad o @cuenta">
+                </div>
+                <div class="field-group">
+                  <label class="field-label" for="igImportJsonInput">JSON capturado por Antigravity Browser</label>
+                  <textarea id="igImportJsonInput" class="textarea textarea--mono" rows="4" placeholder='[{"shortcode":"Cx123","authorHandle":"@creador","caption":"3 trucos de IA...","viewCount":"42K","likeCount":"3.1K","frameImageBase64":"data:image/jpeg;base64,..."}]'></textarea>
+                </div>
+              </div>
+              <div style="display:flex;justify-content:flex-end;gap:8px;">
+                <button id="btnSubmitIgImport" class="md-btn md-btn--filled md-btn--sm" type="submit">
+                  <span class="material-symbols-rounded icon-sm" aria-hidden="true">auto_awesome</span>
+                  <span>Analizar con Gemini Vision y Guardar</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="section-heading-bar">
+          <h2>Catálogo de Reels capturados de Instagram</h2>
+        </div>
+        <div id="igReelsGrid" class="ig-reels-grid"></div>
+      </section>
+
+      <!-- Vista 5: Roadmap IG Independiente (Mismo formato editorial Content Studio) -->
+      <section id="view-ig-roadmap" class="view-panel hidden" role="tabpanel" aria-labelledby="tab-ig-roadmap">
+        <div class="studio-hero">
+          <div class="studio-hero__heading">
+            <h2 class="studio-display-title">Roadmap IG, con dirección.</h2>
+            <p class="studio-hero__subtitle">30 días en este mismo formato, alimentados solo con Reels extraídos de Instagram.</p>
+          </div>
+
+          <div class="hero-prompt-card">
+            <div>
+              <label class="hero-prompt__label" for="igRoadmapNicheInput">¿Sobre qué nicho quieres tu Roadmap IG?</label>
+              <div class="hero-prompt__input-row">
+                <input id="igRoadmapNicheInput" class="hero-niche-input" type="text" value="Inteligencia Artificial y Productividad" placeholder="Ej. Inteligencia Artificial y Productividad">
+                <button id="btnLoadIgRoadmap" class="btn-hero-secondary" type="button" title="Cargar Roadmap IG guardado para este nicho">
+                  <span class="material-symbols-rounded icon-sm" aria-hidden="true">sync</span>
+                  <span>Cargar</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="hero-prompt__footer">
+              <div class="hero-ig-wrap">
+                <label class="hero-ig-label" for="igRoadmapSourceSelect">Fuente capturada</label>
+                <div class="select-wrap">
+                  <select id="igRoadmapSourceSelect" class="ig-source-select-pill">
+                    <option value="all">Todos los Reels (0)</option>
+                  </select>
+                  <span class="material-symbols-rounded icon-sm select-chevron" aria-hidden="true">expand_more</span>
+                </div>
+              </div>
+
+              <div class="hero-prompt__actions">
+                <button id="btnOpenIgCaptureTab" class="btn-hero-secondary" type="button">
+                  <span class="material-symbols-rounded icon-sm" aria-hidden="true">movie_filter</span>
+                  <span>Capturar Reels</span>
+                </button>
+                <button id="btnGenerateIgRoadmap" class="btn-hero-primary" type="button">
+                  <span class="material-symbols-rounded icon-sm" aria-hidden="true">auto_awesome</span>
+                  <span>Generar 30 días IG</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="igRoadmapLinearProgress" class="md-linear-progress hidden" role="progressbar" aria-label="Cargando datos del Roadmap IG">
+          <div class="md-linear-progress__bar"></div>
+        </div>
+
+        <div id="igRoadmapSourceNotice" class="source-notice md-banner hidden" role="status"></div>
+
+        <div class="plan-overview-strip">
+          <div class="plan-progress-block">
+            <span class="plan-kicker">Tu plan IG de 30 días</span>
+            <span id="igProgressSummaryText" class="progress-label tabular-nums">0 de 0 publicados</span>
+            <div class="progress-track" aria-hidden="true">
+              <div id="igProgressFill" class="progress-fill"></div>
+            </div>
+            <span id="igPlanProgressSub" class="plan-progress-sub">Captura Reels de IG y genera tu plan aparte.</span>
+          </div>
+
+          <div id="igDayDotsStrip" class="day-dots-strip" aria-label="Selector rápido de los 30 días IG"></div>
+        </div>
+
+        <div id="igRoadmapWorkspace" class="roadmap-workspace">
+          <div class="roadmap-list-pane">
+            <div class="roadmap-pane-head">
+              <div class="roadmap-pane-title-wrap">
+                <h2 class="roadmap-pane-title">Tu roadmap IG</h2>
+                <span id="igRoadmapIdeasCount" class="roadmap-pane-meta tabular-nums">Sin roadmap IG generado aún</span>
+              </div>
+
+              <div class="roadmap-toolbar">
+                <div class="toolbar-pill-select select-wrap">
+                  <label class="sr-only" for="igStatusFilterSelect">Filtrar por estado IG</label>
+                  <select id="igStatusFilterSelect" class="select">
+                    <option value="all">Todos los estados</option>
+                    <option value="pendiente">Pendiente</option>
+                    <option value="grabado">Grabado</option>
+                    <option value="editado">Editado</option>
+                    <option value="publicado">Publicado</option>
+                  </select>
+                  <span class="material-symbols-rounded icon-sm select-chevron" aria-hidden="true">expand_more</span>
+                </div>
+
+                <div class="toolbar-pill-select select-wrap">
+                  <label class="sr-only" for="igFormatFilterSelect">Filtrar por formato IG</label>
+                  <select id="igFormatFilterSelect" class="select">
+                    <option value="all">Todos los formatos</option>
+                    <option value="Reel">Reel</option>
+                    <option value="Carrusel">Carrusel</option>
+                    <option value="Story">Story</option>
+                  </select>
+                  <span class="material-symbols-rounded icon-sm select-chevron" aria-hidden="true">expand_more</span>
+                </div>
+
+                <div class="toolbar-search-box">
+                  <label class="sr-only" for="searchIgRoadmapInput">Buscar en el roadmap IG</label>
+                  <span class="material-symbols-rounded icon-sm filter-search-icon" aria-hidden="true">search</span>
+                  <input id="searchIgRoadmapInput" class="toolbar-search-input" type="search" placeholder="Buscar idea IG o gancho…">
+                </div>
+
+                <div class="view-mode-group md-segmented" role="group" aria-label="Modo de vista IG">
+                  <button id="igViewModeTimeline" class="md-segmented__btn is-active" aria-pressed="true" type="button" title="Vista en línea temporal">
+                    <span class="material-symbols-rounded icon-sm" aria-hidden="true">view_agenda</span>
+                  </button>
+                  <button id="igViewModeGrid" class="md-segmented__btn" aria-pressed="false" type="button" title="Vista en cuadrícula">
+                    <span class="material-symbols-rounded icon-sm" aria-hidden="true">grid_view</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="ig-roadmap-export-row">
+              <div class="week-quick-filters" style="flex:1 1 auto;">
+                <div id="igWeekFilterGroup" class="week-filter-group" role="group" aria-label="Filtrar por semana IG">
+                  <button id="btnIgWeekAll" class="md-filter-chip is-active" data-ig-week="all" aria-pressed="true" type="button">Todas</button>
+                  <button id="btnIgWeek1" class="md-filter-chip" data-ig-week="1" aria-pressed="false" type="button">Sem 1</button>
+                  <button id="btnIgWeek2" class="md-filter-chip" data-ig-week="2" aria-pressed="false" type="button">Sem 2</button>
+                  <button id="btnIgWeek3" class="md-filter-chip" data-ig-week="3" aria-pressed="false" type="button">Sem 3</button>
+                  <button id="btnIgWeek4" class="md-filter-chip" data-ig-week="4" aria-pressed="false" type="button">Sem 4</button>
+                </div>
+                <button id="btnResetIgFilters" class="md-btn md-btn--text md-btn--sm" type="button">Limpiar</button>
+              </div>
+
+              <div class="ig-roadmap-export-btns">
+                <button id="btnExportIgCsv" class="md-btn md-btn--text md-btn--sm" type="button" title="Exportar Roadmap IG a CSV">
+                  <span class="material-symbols-rounded icon-sm" aria-hidden="true">table_view</span>
+                  <span>CSV IG</span>
+                </button>
+                <button id="btnExportIgJson" class="md-btn md-btn--text md-btn--sm" type="button" title="Exportar Roadmap IG a JSON">
+                  <span class="material-symbols-rounded icon-sm" aria-hidden="true">data_object</span>
+                  <span>JSON IG</span>
+                </button>
+              </div>
+            </div>
+
+            <div id="igRoadmapList" class="roadmap-list roadmap-list--timeline" aria-live="polite"></div>
+
+            <div id="igRoadmapEmptyState" class="empty-state hidden">
+              <span class="material-symbols-rounded icon-xl" aria-hidden="true">movie_filter</span>
+              <h3>Sin piezas en este Roadmap IG</h3>
+              <p>Captura Reels en la pestaña "IG Reels" o genera el plan de 30 días basado en Instagram.</p>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+                <button id="btnIgEmptyResetFilters" class="md-btn md-btn--outlined md-btn--sm" type="button">Restablecer filtros</button>
+                <button id="btnIgEmptyGenerate" class="md-btn md-btn--filled md-btn--sm" type="button">Generar 30 días IG</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="igInspectorBackdrop" class="inspector-backdrop hidden" aria-hidden="true"></div>
+
+          <aside id="igDayInspector" class="day-inspector" role="region" aria-label="Inspector del día IG seleccionado">
+            <div class="md-sheet__handle" aria-hidden="true"></div>
+
+            <div id="igDayInspectorContent" class="inspector-body">
+              <div class="inspector-topbar">
+                <div class="inspector-day-counter">
+                  <span id="igInspectorDayBadge" class="md-status-chip md-status-chip--dark badge tabular-nums">DÍA 01</span>
+                  <span id="igInspectorDayTotal">/ 30</span>
+                </div>
+
+                <div class="inspector-nav">
+                  <button id="btnIgPrevDay" class="md-icon-btn md-icon-btn--sm" type="button" aria-label="Día anterior IG" title="Día anterior">
+                    <span class="material-symbols-rounded icon-sm" aria-hidden="true">chevron_left</span>
+                  </button>
+                  <button id="btnIgNextDay" class="md-icon-btn md-icon-btn--sm" type="button" aria-label="Día siguiente IG" title="Día siguiente">
+                    <span class="material-symbols-rounded icon-sm" aria-hidden="true">chevron_right</span>
+                  </button>
+                  <button id="btnIgExpandInspector" class="btn-expand-inspector" type="button" aria-expanded="false">
+                    <span id="igExpandInspectorLabel">Expandir</span>
+                    <span class="material-symbols-rounded icon-sm" aria-hidden="true">open_in_new</span>
+                  </button>
+                  <button id="btnIgCloseDrawer" class="md-icon-btn md-icon-btn--sm" type="button" aria-label="Cerrar panel IG" title="Cerrar">
+                    <span class="material-symbols-rounded icon-sm" aria-hidden="true">close</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="inspector-heading-block">
+                <span class="inspector-kicker">Publicación IG independiente</span>
+                <div class="inspector-submeta">
+                  <span id="igInspectorFormatBadge">Reel</span>
+                  <span>·</span>
+                  <span id="igInspectorPillarBadge">Atracción</span>
+                  <span>·</span>
+                  <span id="igInspectorWeekBadge">Semana 1</span>
+                  <span id="igLocalDraftBadge" class="md-status-chip md-status-chip--editado badge hidden">Editado</span>
+                </div>
+              </div>
+
+              <div class="inspector-status-bar">
+                <span class="inspector-status-label">Estado de producción</span>
+                <div class="inspector-status-select-wrap">
+                  <span id="igInspectorStatusDot" class="status-pill-dot" data-status="pendiente" aria-hidden="true"></span>
+                  <label class="sr-only" for="igInspectorStatusSelect">Estado de producción IG</label>
+                  <select id="igInspectorStatusSelect" class="status-pill-dropdown">
+                    <option value="pendiente">Pendiente</option>
+                    <option value="grabado">Grabado</option>
+                    <option value="editado">Editado</option>
+                    <option value="publicado">Publicado</option>
+                  </select>
+                  <span class="material-symbols-rounded icon-sm select-chevron" aria-hidden="true">expand_more</span>
+                </div>
+
+                <div id="igInspectorStatusGroup" class="inspector-status-group md-segmented" role="group" aria-label="Estado del contenido IG">
+                  <button class="status-btn md-segmented__btn is-active" data-status="pendiente" aria-pressed="true" type="button">Pendiente</button>
+                  <button class="status-btn md-segmented__btn" data-status="grabado" aria-pressed="false" type="button">Grabado</button>
+                  <button class="status-btn md-segmented__btn" data-status="editado" aria-pressed="false" type="button">Editado</button>
+                  <button class="status-btn md-segmented__btn" data-status="publicado" aria-pressed="false" type="button">Publicado</button>
+                </div>
+              </div>
+
+              <h2 id="igInspectorTitle" class="inspector-title">Genera tu Roadmap IG para ver cada día</h2>
+
+              <div id="igInspectorSubtabs" class="inspector-subtabs" role="tablist" aria-label="Secciones de la pieza IG">
+                <button class="inspector-subtab is-active" data-ig-inspector-tab="script" role="tab" aria-selected="true" type="button">Guion</button>
+                <button class="inspector-subtab" data-ig-inspector-tab="visual" role="tab" aria-selected="false" type="button">Visual</button>
+                <button class="inspector-subtab" data-ig-inspector-tab="caption" role="tab" aria-selected="false" type="button">Caption</button>
+              </div>
+
+              <div class="inspector-panels-grid">
+                <div class="inspector-tabpanel is-active" data-ig-inspector-panel="script">
+                  <div class="hook-card">
+                    <div class="section-header-row">
+                      <span class="section-kicker">GANCHO · 0–3 S</span>
+                      <button id="btnIgCopyHook" class="md-btn md-btn--text md-btn--sm" type="button" title="Copiar gancho IG">
+                        <span class="material-symbols-rounded icon-sm" aria-hidden="true">content_copy</span>
+                      </button>
+                    </div>
+                    <p id="igInspectorHook" class="hook-box">—</p>
+                    <p id="igInspectorScreenText" class="hook-screen-cue"></p>
+                  </div>
+
+                  <div id="igInspectorDevBlock" class="script-part-block">
+                    <span class="section-kicker section-kicker--muted">DESARROLLO · 3–25 S</span>
+                    <p id="igInspectorDevText" class="script-part-text">—</p>
+                  </div>
+
+                  <div id="igInspectorCloseBlock" class="script-part-block">
+                    <span class="section-kicker section-kicker--muted">CIERRE · 25–30 S</span>
+                    <p id="igInspectorCloseText" class="script-part-text">—</p>
+                  </div>
+
+                  <details class="script-part-block">
+                    <summary class="section-kicker section-kicker--muted" style="cursor:pointer;">Ver texto completo del guion</summary>
+                    <pre id="igInspectorScript" class="code-block" style="margin-top:6px;">—</pre>
+                  </details>
+                </div>
+
+                <div class="inspector-right-col">
+                  <div class="inspector-tabpanel" data-ig-inspector-panel="visual">
+                    <div class="section-header-row">
+                      <span class="section-kicker section-kicker--muted">ENCUADRE VISUAL</span>
+                      <span id="igVisualRatioLabel" class="md-status-chip md-status-chip--plain badge">9:16</span>
+                    </div>
+
+                    <div class="visual-preview-grid">
+                      <div id="igVisualAspectFrame" class="visual-aspect-frame" data-ratio="9:16">
+                        <div class="visual-frame-top">
+                          <span id="igVisualFrameDay">Día 01</span>
+                          <span id="igVisualFrameFormat">Reel</span>
+                        </div>
+                        <div id="igVisualFrameHookPreview" class="visual-frame-safezone">Portada</div>
+                        <div class="visual-frame-cta">Zona Segura IG</div>
+                      </div>
+
+                      <div class="visual-cues-col">
+                        <p id="igVisualCompositionTip" class="visual-composition-tip">Deja un 15% libre arriba y abajo para la interfaz de Instagram.</p>
+                        <img id="igVisualRefThumb" class="visual-ref-thumb hidden" alt="Primer frame del Reel de referencia en Instagram" loading="lazy">
+                      </div>
+                    </div>
+
+                    <div class="script-part-block">
+                      <div class="section-header-row">
+                        <span class="section-kicker section-kicker--muted">PROMPT DE IMAGEN</span>
+                        <button id="btnIgCopyPrompt" class="md-btn md-btn--text md-btn--sm" type="button">
+                          <span class="material-symbols-rounded icon-sm" aria-hidden="true">content_copy</span>
+                          <span>Copiar</span>
+                        </button>
+                      </div>
+                      <pre id="igInspectorImagePrompt" class="code-block">—</pre>
+                    </div>
+                  </div>
+
+                  <div class="inspector-tabpanel" data-ig-inspector-panel="caption">
+                    <div class="script-part-block">
+                      <div class="section-header-row">
+                        <span class="section-kicker section-kicker--muted">CAPTION &amp; HASHTAGS</span>
+                        <button id="btnIgCopyCaption" class="md-btn md-btn--text md-btn--sm" type="button">
+                          <span class="material-symbols-rounded icon-sm" aria-hidden="true">content_copy</span>
+                          <span>Copiar</span>
+                        </button>
+                      </div>
+                      <div id="igInspectorCaption" class="caption-box">—</div>
+                      <div id="igInspectorHashtags" class="hashtags-list"></div>
+                    </div>
+
+                    <div id="igInspectorReelRef" class="yt-ref-box hidden">
+                      <span class="kv-key">Referencia Reel IG:</span>
+                      <a id="igInspectorReelLink" class="yt-ref-link" href="#" target="_blank" rel="noopener noreferrer">Ver Reel</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <form id="igDraftEditorForm" class="draft-editor-form hidden">
+                <div class="field-group">
+                  <label class="field-label" for="igEditHookInput">Editar gancho IG (local)</label>
+                  <textarea id="igEditHookInput" class="textarea" rows="2"></textarea>
+                </div>
+                <div class="field-group">
+                  <label class="field-label" for="igEditPromptInput">Editar prompt de imagen IG (local)</label>
+                  <textarea id="igEditPromptInput" class="textarea textarea--mono" rows="3"></textarea>
+                </div>
+                <div class="field-group">
+                  <label class="field-label" for="igEditScriptInput">Editar guion IG (local)</label>
+                  <textarea id="igEditScriptInput" class="textarea textarea--mono" rows="5"></textarea>
+                </div>
+                <div class="field-group">
+                  <label class="field-label" for="igEditCaptionInput">Editar caption IG (local)</label>
+                  <textarea id="igEditCaptionInput" class="textarea" rows="4"></textarea>
+                </div>
+                <div class="draft-edit-actions">
+                  <button id="btnIgResetDraft" class="md-btn md-btn--text md-btn--sm" type="button">Restaurar original</button>
+                  <div class="draft-edit-buttons">
+                    <button id="btnIgCancelDraft" class="md-btn md-btn--outlined md-btn--sm" type="button">Cancelar</button>
+                    <button id="btnIgSaveDraft" class="md-btn md-btn--filled md-btn--sm" type="submit">Guardar borrador</button>
+                  </div>
+                </div>
+              </form>
+
+              <div class="inspector-footer-actions">
+                <button id="btnIgCopyScript" class="btn-inspector-primary" type="button">
+                  <span class="material-symbols-rounded icon-sm" aria-hidden="true">content_copy</span>
+                  <span>Copiar guion</span>
+                </button>
+
+                <div class="inspector-secondary-row">
+                  <button id="btnIgToggleEditMode" class="btn-inspector-soft" type="button">
+                    <span>Editar</span>
+                  </button>
+                  <button id="btnIgOtherSuggestion" class="btn-inspector-soft" type="button" title="Ir a otra idea IG">
+                    <span class="material-symbols-rounded icon-sm" aria-hidden="true">sync</span>
+                    <span>Otra sugerencia</span>
+                  </button>
+                </div>
+
+                <p class="inspector-disclaimer">Revisa y adapta las sugerencias basadas en IG Reels.</p>
+              </div>
+            </div>
+          </aside>
+        </div>
       </section>
 
       <!-- Vista 3: Oráculo & Fuentes de Datos -->

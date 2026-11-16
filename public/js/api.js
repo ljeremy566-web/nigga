@@ -2,8 +2,11 @@ import {
   dom,
   state,
   ensureValidSelectedDay,
+  ensureValidSelectedIgDay,
   generateClientFallbackRoadmap,
+  getSelectedRawIgItem,
   getSelectedRawItem,
+  normalizeIgReelItem,
   normalizeRoadmapItem,
   normalizeVideoItem,
 } from './state.js';
@@ -37,6 +40,18 @@ import {
   renderHealthAndOracleBadges,
   renderOracleView,
 } from './views/oracle-view.js';
+import { renderIgReelsGrid } from './views/ig-reels-view.js';
+import {
+  renderIgInspectorNow,
+  renderIgProgressAndCounters,
+  renderIgRoadmapList,
+  renderIgRoadmapSkeletons,
+  setIgRoadmapLinearProgress,
+  updateIgCardStatusBadge,
+  updateIgInspectorStatusButtons,
+  updateIgPrevNextButtons,
+  updateIgSourceNotice,
+} from './views/ig-roadmap-view.js';
 
 function setButtonBusy(btn, busy, label) {
   if (!btn) return;
@@ -354,3 +369,272 @@ export async function handleYoutubeSearch(query, maxResults = 6) {
     setButtonBusy(dom.btnYtSearch, false, 'Buscar en YouTube');
   }
 }
+
+export async function fetchIgStatus() {
+  try {
+    const res = await fetch('/api/instagram/status');
+    const data = await res.json();
+    if (res.ok && data.success) {
+      state.igReelsStats = {
+        count: Number(data.reelsCount) || 0,
+        lastCapturedAt: data.lastCapturedAt || null,
+      };
+      renderHealthAndOracleBadges();
+      renderOracleView();
+    }
+  } catch {
+    // Silent during boot
+  }
+}
+
+export async function fetchIgReels(force = false) {
+  if (state.igReelsTabLoaded && !force) {
+    renderIgReelsGrid();
+    return;
+  }
+  state.loading.igReels = true;
+  try {
+    const res = await fetch('/api/instagram/reels');
+    const data = await res.json();
+    if (!res.ok || !data.success || !Array.isArray(data.reels)) {
+      throw new Error(data.error || `HTTP ${res.status}`);
+    }
+    state.igReels = data.reels.map(normalizeIgReelItem);
+    state.igReelsStats = {
+      count: state.igReels.length,
+      lastCapturedAt: state.igReels[0]?.createdAt || state.igReelsStats.lastCapturedAt,
+    };
+    state.igReelsTabLoaded = true;
+    renderIgReelsGrid();
+    renderHealthAndOracleBadges();
+    renderOracleView();
+  } catch (err) {
+    showToast(`Error cargando Reels de Instagram: ${err.message}`, 'error');
+  } finally {
+    state.loading.igReels = false;
+  }
+}
+
+export async function captureIgReelsPayload(rawJsonText, sourceQueryOverride) {
+  if (state.loading.igCapture) return false;
+  let parsed;
+  try {
+    parsed = JSON.parse(String(rawJsonText || '').trim());
+  } catch {
+    showToast('El JSON pegado no es válido. Verifica la estructura.', 'error');
+    return false;
+  }
+
+  let body;
+  if (Array.isArray(parsed)) {
+    body = {
+      sourceQuery: sourceQueryOverride || 'Antigravity Browser',
+      capturedVia: 'manual_json',
+      reels: parsed,
+    };
+  } else if (parsed && typeof parsed === 'object') {
+    body = {
+      ...parsed,
+      sourceQuery: sourceQueryOverride || parsed.sourceQuery || parsed.query || 'Antigravity Browser',
+      capturedVia: parsed.capturedVia || 'antigravity_browser',
+    };
+  } else {
+    showToast('Formato JSON no compatible.', 'error');
+    return false;
+  }
+
+  state.loading.igCapture = true;
+  setButtonBusy(dom.btnSubmitIgImport, true, 'Analizando con Gemini Vision…');
+  try {
+    const res = await fetch('/api/instagram/reels/capture', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || `HTTP ${res.status}`);
+    }
+    await fetchIgReels(true);
+    showToast(`${data.count} Reels capturados y analizados con éxito.`, 'success');
+    return true;
+  } catch (err) {
+    showToast(`Error capturando Reels: ${err.message}`, 'error');
+    return false;
+  } finally {
+    state.loading.igCapture = false;
+    setButtonBusy(dom.btnSubmitIgImport, false, 'Analizar con Gemini Vision y Guardar');
+  }
+}
+
+export async function deleteIgReelByShortcode(shortcode) {
+  if (!shortcode) return;
+  try {
+    const res = await fetch(`/api/instagram/reels/${encodeURIComponent(shortcode)}`, {
+      method: 'DELETE',
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) throw new Error(data.error || `HTTP ${res.status}`);
+    state.igReels = state.igReels.filter((r) => r.shortcode !== shortcode);
+    state.igReelsStats.count = state.igReels.length;
+    renderIgReelsGrid();
+    renderHealthAndOracleBadges();
+    renderOracleView();
+    showToast(`Reel ${shortcode} eliminado.`, 'info');
+  } catch (err) {
+    showToast(`No se pudo eliminar el Reel: ${err.message}`, 'error');
+  }
+}
+
+export async function fetchIgRoadmap(niche, options = {}) {
+  state.loading.igRoadmap = true;
+  const targetNiche = (niche || state.igNiche || DEFAULT_NICHE).trim() || DEFAULT_NICHE;
+  state.igNiche = targetNiche;
+  if (dom.igRoadmapNicheInput && dom.igRoadmapNicheInput.value.trim() !== targetNiche) {
+    dom.igRoadmapNicheInput.value = targetNiche;
+  }
+
+  if (!options.silent) {
+    setIgRoadmapLinearProgress(true);
+    if (state.igRoadmap.length === 0) {
+      renderIgRoadmapSkeletons();
+    }
+  }
+
+  try {
+    const res = await fetch(`/api/instagram/roadmap?niche=${encodeURIComponent(targetNiche)}`);
+    const data = await res.json();
+    if (!res.ok || !data.success || !Array.isArray(data.roadmap)) {
+      throw new Error(data.error || `HTTP ${res.status}`);
+    }
+
+    state.igRoadmap = data.roadmap
+      .map((item) => normalizeRoadmapItem(item, targetNiche))
+      .sort((a, b) => a.day_number - b.day_number);
+
+    if (state.igRoadmap.length === 0) {
+      updateIgSourceNotice(
+        data.capturedReelsCount > 0
+          ? `Tienes ${data.capturedReelsCount} Reels capturados listos. Pulsa "Generar 30 días IG" para crear este roadmap.`
+          : 'Aún no hay un Roadmap IG para este nicho. Captura Reels en "IG Reels" o pulsa "Generar 30 días IG".'
+      );
+    } else {
+      updateIgSourceNotice('');
+    }
+
+    if (!options.silent) {
+      renderIgProgressAndCounters();
+      renderIgRoadmapList();
+      ensureValidSelectedIgDay();
+      renderIgInspectorNow(getSelectedRawIgItem());
+    }
+  } catch (err) {
+    updateIgSourceNotice(`Error cargando Roadmap IG (${err.message}).`, true);
+    if (!options.silent) {
+      showToast(`No se pudo cargar el Roadmap IG: ${err.message}`, 'error');
+    }
+  } finally {
+    state.loading.igRoadmap = false;
+    if (!options.silent && !state.loading.igGenerate) {
+      setIgRoadmapLinearProgress(false);
+    }
+  }
+}
+
+export async function executeGenerateIgRoadmap(customNiche, customSourceQuery) {
+  if (state.loading.igGenerate) return;
+  const niche = (customNiche ?? dom.igRoadmapNicheInput?.value ?? DEFAULT_NICHE).trim() || DEFAULT_NICHE;
+  const rawSource = customSourceQuery ?? dom.igRoadmapSourceSelect?.value ?? state.igSourceQueryFilter ?? 'all';
+  const sourceQuery = rawSource && rawSource !== 'all' ? rawSource : undefined;
+
+  if (dom.igRoadmapNicheInput) dom.igRoadmapNicheInput.value = niche;
+  state.igNiche = niche;
+  if (sourceQuery) state.igSourceQueryFilter = sourceQuery;
+
+  state.loading.igGenerate = true;
+  setIgRoadmapLinearProgress(true);
+  setButtonBusy(dom.btnGenerateIgRoadmap, true, 'Generando…');
+
+  try {
+    const res = await fetch('/api/instagram/roadmap/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ niche, sourceQuery }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || `HTTP ${res.status}`);
+    }
+
+    await fetchIgReels(true);
+    await fetchIgRoadmap(niche, { silent: true });
+    if (state.igRoadmap.length === 0 && Array.isArray(data.roadmap)) {
+      state.igRoadmap = data.roadmap
+        .map((item) => normalizeRoadmapItem(item, niche))
+        .sort((a, b) => a.day_number - b.day_number);
+    }
+
+    state.igSelectedDay = state.igRoadmap[0]?.day_number || 1;
+    state.igIsEditingDraft = false;
+    updateIgSourceNotice(
+      data.reelsUsed > 0
+        ? `Roadmap IG generado con ${data.reelsUsed} Reels capturados de Instagram.`
+        : 'Roadmap IG generado con estructura base IG (captura Reels en "IG Reels" para referencias reales).'
+    );
+    renderIgProgressAndCounters();
+    await transitionSwap(dom.igRoadmapList, () => renderIgRoadmapList());
+    await transitionSwap(dom.igDayInspectorContent, () => renderIgInspectorNow(getSelectedRawIgItem()));
+    showToast(data.message || `Roadmap IG de 30 días generado para "${niche}".`, 'success');
+  } catch (err) {
+    showToast(`Error generando Roadmap IG: ${err.message}`, 'error');
+  } finally {
+    state.loading.igGenerate = false;
+    setIgRoadmapLinearProgress(false);
+    setButtonBusy(dom.btnGenerateIgRoadmap, false, 'Generar 30 días IG');
+  }
+}
+
+export async function handleIgStatusChange(dayNumber, newStatus) {
+  const item = state.igRoadmap.find((d) => d.day_number === dayNumber);
+  if (!item || !STATUS_OPTIONS.includes(newStatus)) return;
+  if (state.igStatusUpdatingDay === dayNumber || item.status === newStatus) return;
+
+  const previousStatus = item.status;
+  state.igStatusUpdatingDay = dayNumber;
+
+  item.status = newStatus;
+  renderIgProgressAndCounters();
+  updateIgCardStatusBadge(dayNumber, newStatus);
+  updateIgInspectorStatusButtons(newStatus);
+  if (state.igFilters.status !== 'all') {
+    renderIgRoadmapList();
+    updateIgPrevNextButtons();
+  }
+
+  try {
+    const targetId = encodeURIComponent(item.id || item.day_number);
+    const res = await fetch(`/api/instagram/roadmap/${targetId}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus, niche: item.niche }),
+    });
+    const payload = await res.json().catch(() => ({}));
+    if (!res.ok || payload.success === false) {
+      throw new Error(payload.error || `HTTP ${res.status}`);
+    }
+    showToast(`Día IG ${padDay(dayNumber)} marcado como "${newStatus}".`, 'success');
+  } catch (err) {
+    item.status = previousStatus;
+    renderIgProgressAndCounters();
+    updateIgCardStatusBadge(dayNumber, previousStatus);
+    updateIgInspectorStatusButtons(previousStatus);
+    if (state.igFilters.status !== 'all') {
+      renderIgRoadmapList();
+      updateIgPrevNextButtons();
+    }
+    showToast(`No se pudo guardar el estado IG: ${err.message}`, 'error');
+  } finally {
+    state.igStatusUpdatingDay = null;
+  }
+}
+

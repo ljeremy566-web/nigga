@@ -58,15 +58,26 @@ Every feature discovered in the Survey phase is assigned to a milestone below (0
 - `POST /api/oracle/run-now` (`{ niche, instagramAccount }`) → `200 { success, report }`
 - `GET /api/oracle/status` → `200 { success, lastExecution }`
 
+### 1.1 Instagram Reels Research & Independent Roadmap IG Endpoints
+- `GET /api/instagram/status` → `200 { success, reelsCount, lastCapturedAt, visionMode, mode }`
+- `GET /api/instagram/reels` → `200 { success, count, sourceQuery?, reels: IgCapturedReel[] }`
+- `POST /api/instagram/reels/capture` (`{ sourceQuery?, capturedVia?, reels: CapturedReelInput[] }`) → `200 { success, count, reels: IgCapturedReel[] }` (extracts shortcode, parses K/M/B counters, analyzes JPEG/PNG `frameImageBase64` with Gemini Vision or heuristic fallback)
+- `DELETE /api/instagram/reels/:shortcode` → `200 { success, message }`
+- `GET /api/instagram/roadmap?niche=...` → `200 { success, count, niche, capturedReelsCount, roadmap: IgRoadmapDayItem[] }`
+- `POST /api/instagram/roadmap/generate` (`{ niche, sourceQuery? }`) → `200 { success, message, count, reelsUsed, roadmap: IgRoadmapDayItem[] }`
+- `PATCH /api/instagram/roadmap/:id/status` (`{ status: 'pendiente'|'grabado'|'editado'|'publicado', niche? }`) → `200 { success, message }`
+
 ### 2. DOM IDs, Attributes & Storage Contracts (Preserved for Parity & E2E Tests)
 - **Theme**: `document.documentElement.dataset.theme` (`"light"` | `"dark"`), persisted in `localStorage` key `content_studio_theme_v1`; toggle button `#btnThemeToggle`.
-- **Navigation Tabs**: `#tab-roadmap` (`data-tab="roadmap"`), `#tab-youtube` (`data-tab="youtube"`), `#tab-oracle` (`data-tab="oracle"`), panels `#view-roadmap`, `#view-youtube`, `#view-oracle` (`.hidden` on inactive, `aria-selected="true"|"false"`), synced with `window.location.hash` (`#roadmap`, `#youtube`, `#oracle`). Note: Desktop Nav Rail and Mobile Nav Bar may either share a single responsive `<nav>` element with those exact IDs `#tab-roadmap`, `#tab-youtube`, `#tab-oracle` (recommended — zero duplicate IDs!) so selectors are 100% unique and valid HTML.
+- **Navigation Tabs**: `#tab-roadmap` (`data-tab="roadmap"`), `#tab-youtube` (`data-tab="youtube"`), `#tab-ig-reels` (`data-tab="ig-reels"`), `#tab-ig-roadmap` (`data-tab="ig-roadmap"`), `#tab-oracle` (`data-tab="oracle"`), panels `#view-roadmap`, `#view-youtube`, `#view-ig-reels`, `#view-ig-roadmap`, `#view-oracle` (`.hidden` on inactive, `aria-selected="true"|"false"`), synced with `window.location.hash` (`#roadmap`, `#youtube`, `#ig-reels`, `#ig-roadmap`, `#oracle`). Note: Desktop Nav Rail and Mobile Nav Bar share a single responsive `<nav>` element so selectors are 100% unique and valid HTML.
 - **Status Badges**: `#statusHealthBadge`, `#statusOracleBadge`, `#statusSourceBadge`.
 - **Roadmap Command & Progress**: `#nicheInput`, `#igAccountInput`, `#btnLoadRoadmap`, `#btnGenerateRoadmap`, `#btnRunOracle`, `#btnExportCsv`, `#btnExportJson`, `#roadmapSourceNotice`, `#roadmapLinearProgress` (visible during async load/generate/oracle), `#progressSummaryText`, `#progressFill`, `#countTotal`, `#countPendiente`, `#countGrabado`, `#countEditado`, `#countPublicado`.
 - **Roadmap Filters & List**: `#weekFilterGroup` (`#btnWeekAll`, `#btnWeek1`..`#btnWeek4` with `data-week="all|1|2|3|4"`), `#searchRoadmapInput`, `#formatFilterSelect`, `#statusFilterSelect`, `#viewModeGrid`, `#viewModeTimeline`, `#btnResetFilters`, `#roadmapList`, `#roadmapEmptyState`, `#btnEmptyResetFilters`, `.day-card` (`#day-card-{n}`, `data-day="{n}"`, `[data-card-status="{n}"]`).
 - **Day Inspector Sheet**: `#dayInspector`, `#inspectorBackdrop`, `#inspectorDayBadge`, `#inspectorWeekBadge`, `#inspectorFormatBadge`, `#inspectorPillarBadge`, `#localDraftBadge`, `#btnPrevDay`, `#btnNextDay`, `#btnToggleEditMode`, `#btnCloseDrawer`, `#dayInspectorContent`, `#inspectorStatusGroup` (`#statusBtn-pendiente`, `#statusBtn-grabado`, `#statusBtn-editado`, `#statusBtn-publicado` with `data-status`), `#inspectorTitle`, `#btnCopyHook`, `#inspectorHook`, `#btnCopyPrompt`, `#visualAspectFrame` (`data-ratio="9:16"|"1:1"`), `#visualFrameDay`, `#visualFrameFormat`, `#visualRatioLabel`, `#visualCompositionTip`, `#visualRefThumb`, `#inspectorImagePrompt`, `#btnCopyScript`, `#inspectorScript`, `#btnCopyCaption`, `#inspectorCaption`, `#inspectorHashtags`, `#inspectorYoutubeRef`, `#inspectorRefLink`, `#draftEditorForm` (`#editHookInput`, `#editPromptInput`, `#editScriptInput`, `#editCaptionInput`, `#btnResetDraft`, `#btnCancelDraft`, `#btnSaveDraft`). Draft storage key: `content_studio_drafts_v1` keyed by `${niche.toLowerCase()}::${day_number}`.
 - **M3 Confirm Dialog & Snackbar**: `#m3ConfirmDialog` (`role="alertdialog"` / `role="dialog"`, `aria-modal="true"`, `#m3ConfirmTitle`, `#m3ConfirmBody`, `#m3ConfirmCancel`, `#m3ConfirmAccept`), `#toastContainer` (M3 Snackbar slot).
 - **YouTube Research**: `#ytSearchForm`, `#ytSearchInput`, `#ytMaxResultsSelect`, `#btnYtSearch`, `#ytHistoryList` (`.history-chip[data-history-query]`), `#ytResultsSection`, `#ytResultsList`, `#ytVideosGrid`, `[data-use-topic]`.
+- **IG Reels Research**: `#igReelsFilterInput`, `#igReelsAuthorFilter`, `#btnRefreshIgReels`, `#btnGoGenerateIgRoadmap`, `#btnCopyBrowserPrompt`, `#btnToggleIgImport`, `#igImportPanel`, `#igImportForm`, `#igImportSourceInput`, `#igImportJsonInput`, `#btnSubmitIgImport`, `#igReelsCountBadge`, `#igReelsGrid` (`.ig-reel-card[data-ig-shortcode]`, `[data-delete-ig-reel]`, `[data-use-ig-reel-query]`).
+- **Roadmap IG Independiente**: `#igRoadmapNicheInput`, `#igRoadmapSourceSelect`, `#btnLoadIgRoadmap`, `#btnGenerateIgRoadmap`, `#btnOpenIgCaptureTab`, `#btnExportIgCsv`, `#btnExportIgJson`, `#igRoadmapLinearProgress`, `#igRoadmapSourceNotice`, `#igProgressSummaryText`, `#igProgressFill`, `#igDayDotsStrip`, `#igRoadmapIdeasCount`, `#igWeekFilterGroup`, `#igFormatFilterSelect`, `#igStatusFilterSelect`, `#searchIgRoadmapInput`, `#igViewModeTimeline`, `#igViewModeGrid`, `#btnResetIgFilters`, `#igRoadmapWorkspace`, `#igRoadmapList`, `#igRoadmapEmptyState`, `.ig-day-card` (`#ig-day-card-{n}`, `data-ig-day="{n}"`, `[data-ig-card-status="{n}"]`), `#igDayInspector`, `#igInspectorStatusGroup`, `#igInspectorSubtabs`, `#igInspectorReelRef`, `#igInspectorReelLink`, `#igDraftEditorForm` (draft storage key `content_studio_ig_drafts_v1`).
 - **Oráculo & Fuentes**: `#oracleHealthCard`, `#healthStatusText`, `#healthUptimeText`, `#oracleLastRunCard`, `#oracleLastStatus`, `#oracleLastTimestamp`, `#oracleLastDetails`, `#btnOracleTabRun`, `#dataTruthGrid` (`#truthCard-youtube`, `#truthCard-gemini`, `#truthCard-supabase`, `#truthCard-instagram`).
 
 ### 3. CSS Token Naming Contract (`public/styles/tokens.css` -> downstream CSS)
@@ -82,21 +93,32 @@ Every feature discovered in the Survey phase is assigned to a milestone below (0
 
 ```
 /home/antigravity/ljeremy566-web/nigga/
-├── src/                         # Backend Express + TypeScript (DO NOT MODIFY)
-├── sql/                         # Supabase schema (DO NOT MODIFY)
-├── oracle/                      # VPS deploy configs (DO NOT MODIFY)
-├── public/                      # Frontend static files (M1-M4 target)
-│   ├── index.html               # M3 owns
+├── .agents/skills/
+│   └── ig-reels-browser-capture/ # Skill de captura con Antigravity Browser
+├── scripts/
+│   └── ig-capture-cdp.mjs       # Captura local CDP (Node v24 sin deps externas)
+├── src/
+│   ├── routes/instagram.routes.ts
+│   └── services/
+│       ├── instagram.service.ts
+│       ├── ig-roadmap.service.ts
+│       └── gemini.service.ts
+├── sql/
+│   └── supabase_schema.sql      # Incluye public.ig_captured_reels & public.ig_content_roadmap
+├── oracle/                      # VPS deploy configs
+├── public/                      # Frontend static files
+│   ├── index.html
 │   ├── styles/
-│   │   ├── tokens.css           # M1 owns
-│   │   ├── base.css             # M1 owns
-│   │   ├── shell.css            # M2 owns
-│   │   ├── components.css       # M2 owns
+│   │   ├── tokens.css
+│   │   ├── base.css
+│   │   ├── shell.css
+│   │   ├── components.css
 │   │   └── views/
-│   │       ├── roadmap.css      # M3 owns
-│   │       ├── youtube.css      # M3 owns
-│   │       └── oracle.css       # M3 owns
-│   └── js/                      # M4 owns
+│   │       ├── roadmap.css
+│   │       ├── youtube.css
+│   │       ├── oracle.css
+│   │       └── instagram.css
+│   └── js/
 │       ├── main.js
 │       ├── state.js
 │       ├── api.js
@@ -107,13 +129,16 @@ Every feature discovered in the Survey phase is assigned to a milestone below (0
 │       │   ├── theme.js
 │       │   └── motion.js
 │       └── views/
+│           ├── roadmap-shared.js
 │           ├── roadmap-list.js
 │           ├── day-inspector.js
+│           ├── ig-reels-view.js
+│           ├── ig-roadmap-view.js
 │           ├── youtube-view.js
 │           └── oracle-view.js
 ├── tests/
-│   └── e2e/                     # E2E Testing Track owns (never inside .agents/teamwork/)
-├── PROJECT.md                   # Project Orchestrator owns
-├── TEST_INFRA.md                # E2E Testing Orchestrator owns
-└── TEST_READY.md                # E2E Testing Orchestrator publishes on completion
+│   └── e2e/                     # E2E tests (incluye ig-roadmap.test.mjs)
+├── PROJECT.md
+├── TEST_INFRA.md
+└── TEST_READY.md
 ```

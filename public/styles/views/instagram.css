@@ -1,0 +1,311 @@
+/* ==========================================================================
+   Content Studio — Vistas IG Reels Research & Roadmap IG Independiente
+   Mantiene el mismo sistema editorial Google Sans Flex & tokens.css
+   ========================================================================== */
+
+.ig-command-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px 20px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-hairline);
+  background-color: var(--surface-stone);
+}
+
+.ig-command-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 190px auto auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.ig-browser-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-hairline);
+}
+
+.ig-browser-bar__hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: var(--ink-secondary);
+}
+
+.ig-browser-bar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.ig-import-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 18px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-hairline);
+  background-color: var(--surface-elevated);
+}
+
+.ig-import-grid {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.ig-reels-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 16px;
+}
+
+.ig-reel-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-hairline);
+  background-color: var(--surface-elevated);
+  overflow: hidden;
+  transition:
+    border-color var(--duration-fast) var(--ease-standard),
+    background-color var(--duration-fast) var(--ease-standard);
+}
+
+.ig-reel-card:hover {
+  border-color: var(--border-strong);
+  background-color: var(--surface-subtle);
+}
+
+.ig-reel-card__media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: var(--gradient-editorial);
+  border-bottom: 1px solid var(--border-hairline);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ig-reel-card__thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ig-reel-card__placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: var(--accent-plum);
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.ig-reel-card__angle-pill {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+  background-color: rgba(29, 27, 32, 0.76);
+  color: #ffffff;
+  font-size: 0.68rem;
+  font-weight: 500;
+  backdrop-filter: blur(4px);
+}
+
+.ig-reel-card__body {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 16px;
+  flex: 1 1 auto;
+}
+
+.ig-reel-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ig-reel-card__author {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--ink-primary);
+}
+
+.ig-reel-card__metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--ink-muted);
+}
+
+.ig-reel-card__hook {
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  background-color: var(--surface-lavender-soft);
+  border: 1px solid var(--border-hairline);
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--ink-primary);
+}
+
+.ig-reel-card__hook strong {
+  display: block;
+  font-size: 0.64rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent-plum);
+  margin-bottom: 2px;
+}
+
+.ig-reel-card__caption {
+  font-size: 0.78rem;
+  line-height: 1.42;
+  color: var(--ink-secondary);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ig-reel-card__style {
+  font-size: 0.72rem;
+  color: var(--ink-muted);
+}
+
+.ig-reel-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-hairline);
+}
+
+.ig-roadmap-export-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ig-roadmap-export-btns {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ig-source-select-pill {
+  min-width: 190px;
+  max-width: 260px;
+  height: 32px;
+  padding: 0 28px 0 12px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-hairline);
+  background-color: var(--surface-canvas);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--ink-primary);
+}
+
+/* Mantiene paridad visual exacta con .day-card / .day-inspector en #view-ig-roadmap */
+.ig-day-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  padding: 15px 18px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  background-color: var(--surface-canvas);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard);
+}
+
+.ig-day-card:hover {
+  background-color: var(--surface-subtle);
+}
+
+.ig-day-card:focus-visible {
+  outline: 2px solid var(--accent-plum);
+  outline-offset: 2px;
+}
+
+.ig-day-card--selected {
+  background: var(--gradient-editorial);
+  border-color: rgba(68, 51, 112, 0.08);
+}
+
+.ig-day-card--selected:hover {
+  background: var(--gradient-editorial);
+}
+
+.roadmap-list--timeline .ig-day-card--selected .day-card-node {
+  background-color: var(--accent-plum);
+  border-color: var(--accent-plum);
+  color: #FFFFFF;
+}
+
+.roadmap-list--grid .ig-day-card {
+  border-color: var(--border-hairline);
+  background-color: var(--surface-subtle);
+}
+
+.roadmap-list--grid .ig-day-card--selected {
+  background: var(--gradient-editorial);
+  border-color: rgba(68, 51, 112, 0.22);
+}
+
+.ig-day-card--selected .day-card-title {
+  font-weight: 500;
+}
+
+.ig-day-card:not(.ig-day-card--selected) .day-card-cta-label {
+  display: none;
+}
+
+#btnIgCloseDrawer {
+  display: none;
+}
+
+@media (max-width: 1023.98px) {
+  #btnIgCloseDrawer {
+    display: inline-flex;
+  }
+
+  #btnIgExpandInspector {
+    display: none;
+  }
+}
+
+@media (max-width: 839.98px) {
+  .ig-command-row,
+  .ig-import-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
