@@ -7,6 +7,7 @@ import { isMock } from './config/supabase.js';
 import youtubeRoutes from './routes/youtube.routes.js';
 import roadmapRoutes from './routes/roadmap.routes.js';
 import oracleRoutes from './routes/oracle.routes.js';
+import instagramRoutes from './routes/instagram.routes.js';
 import { YouTubeService } from './services/youtube.service.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -17,7 +18,7 @@ const youtubeService = new YouTubeService();
 
 // Middlewares
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '6mb' }));
 
 // Archivos estáticos si existieran
 app.use(express.static(path.join(__dirname, '../public')));
@@ -36,7 +37,7 @@ app.get('/', (_req: Request, res: Response) => {
   res.json({
     name: 'YouTube Data API v3 & Supabase Integration Backend',
     version: '1.0.0',
-    description: 'Generador de Roadmaps de 30 Días para Instagram a partir de tendencias de YouTube',
+    description: 'Generador de Roadmaps de 30 Días para Instagram a partir de tendencias de YouTube y captura de IG Reels',
     supabase_status: isMock ? 'fallback_in_memory' : 'connected_cloud',
     youtube_status: config.youtubeApiKey ? 'configured' : 'mock_ready',
     endpoints: {
@@ -47,6 +48,11 @@ app.get('/', (_req: Request, res: Response) => {
       roadmapGet: 'GET /api/roadmap?niche=:niche',
       roadmapGenerate: 'POST /api/roadmap/generate { niche: string }',
       roadmapStatusUpdate: 'PATCH /api/roadmap/:id/status { status: string }',
+      igReelsList: 'GET /api/instagram/reels?query=:q&author=:handle',
+      igReelsCapture: 'POST /api/instagram/reels/capture { sourceQuery, reels: [...] }',
+      igRoadmapGet: 'GET /api/instagram/roadmap?niche=:niche',
+      igRoadmapGenerate: 'POST /api/instagram/roadmap/generate { niche, sourceQuery }',
+      igRoadmapStatusUpdate: 'PATCH /api/instagram/roadmap/:id/status { status: string }',
     },
   });
 });
@@ -66,6 +72,7 @@ app.use('/api/youtube', youtubeRoutes);
 app.use('/api/roadmap', roadmapRoutes);
 app.use('/api/oracle', oracleRoutes);
 app.use('/api/cron', oracleRoutes);
+app.use('/api/instagram', instagramRoutes);
 
 // Iniciar Servidor
 const server = app.listen(config.port, () => {

@@ -87,3 +87,71 @@ BEGIN
         CREATE POLICY "Permitir todo a anon y authenticated" ON public.instagram_content_roadmap FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
     END IF;
 END $$;
+
+-- =========================================================================
+-- 4. Tablas Independientes para Captura de Reels de Instagram y Roadmap IG
+-- =========================================================================
+
+CREATE TABLE IF NOT EXISTS public.ig_captured_reels (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    shortcode TEXT NOT NULL UNIQUE,
+    reel_url TEXT NOT NULL,
+    author_handle TEXT NOT NULL,
+    source_query TEXT NOT NULL DEFAULT 'General',
+    caption TEXT,
+    hashtags TEXT[],
+    audio_name TEXT,
+    view_count BIGINT DEFAULT 0,
+    like_count BIGINT DEFAULT 0,
+    comment_count BIGINT DEFAULT 0,
+    thumbnail_data_url TEXT,
+    visual_hook_text TEXT,
+    visual_style TEXT,
+    detected_angle TEXT,
+    captured_via TEXT DEFAULT 'antigravity_browser',
+    posted_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT now() NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS public.ig_content_roadmap (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    day_number INTEGER NOT NULL,
+    week_number INTEGER NOT NULL,
+    content_pillar TEXT NOT NULL,
+    format TEXT NOT NULL,
+    title TEXT NOT NULL,
+    hook TEXT NOT NULL,
+    script TEXT NOT NULL,
+    image_prompt TEXT,
+    caption TEXT,
+    hashtags TEXT[],
+    status TEXT DEFAULT 'pendiente' CHECK (status IN ('pendiente', 'grabado', 'editado', 'publicado')),
+    niche TEXT DEFAULT 'General',
+    source_query TEXT,
+    reference_reel_shortcode TEXT,
+    reference_reel_url TEXT,
+    reference_reel_author TEXT,
+    created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT now() NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_ig_reels_query ON public.ig_captured_reels(source_query);
+CREATE INDEX IF NOT EXISTS idx_ig_reels_author ON public.ig_captured_reels(author_handle);
+CREATE INDEX IF NOT EXISTS idx_ig_reels_views ON public.ig_captured_reels(view_count DESC);
+CREATE INDEX IF NOT EXISTS idx_ig_roadmap_day ON public.ig_content_roadmap(day_number);
+CREATE INDEX IF NOT EXISTS idx_ig_roadmap_niche ON public.ig_content_roadmap(niche);
+CREATE INDEX IF NOT EXISTS idx_ig_roadmap_status ON public.ig_content_roadmap(status);
+
+ALTER TABLE public.ig_captured_reels ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ig_content_roadmap ENABLE ROW LEVEL SECURITY;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'ig_captured_reels' AND policyname = 'Permitir todo a anon y authenticated') THEN
+        CREATE POLICY "Permitir todo a anon y authenticated" ON public.ig_captured_reels FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'ig_content_roadmap' AND policyname = 'Permitir todo a anon y authenticated') THEN
+        CREATE POLICY "Permitir todo a anon y authenticated" ON public.ig_content_roadmap FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+    END IF;
+END $$;
+
