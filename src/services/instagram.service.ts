@@ -26,12 +26,21 @@ export interface CapturedInstagramReelInput {
   reelUrl?: string;
   reel_url?: string;
   url?: string;
+  link?: string;
+  permalink?: string;
   authorHandle?: string;
   author_handle?: string;
   author?: string;
+  handle?: string;
+  username?: string;
+  account?: string;
+  ownerUsername?: string;
   sourceQuery?: string;
   source_query?: string;
   caption?: string;
+  description?: string;
+  text?: string;
+  title?: string;
   hashtags?: string[] | string;
   audioName?: string;
   audio_name?: string;
@@ -39,15 +48,25 @@ export interface CapturedInstagramReelInput {
   viewCount?: number | string;
   view_count?: number | string;
   views?: number | string;
+  viewsCount?: number | string;
+  playCount?: number | string;
+  plays?: number | string;
   likeCount?: number | string;
   like_count?: number | string;
   likes?: number | string;
+  likesCount?: number | string;
   commentCount?: number | string;
   comment_count?: number | string;
   comments?: number | string;
+  commentsCount?: number | string;
   frameImageBase64?: string;
   thumbnailDataUrl?: string;
   thumbnail_data_url?: string;
+  imageBase64?: string;
+  thumbnailUrl?: string;
+  thumbnail?: string;
+  coverUrl?: string;
+  image?: string;
   postedAt?: string;
   posted_at?: string;
 }
@@ -74,6 +93,14 @@ export interface CapturedInstagramReelItem {
 }
 
 const localIgReelsDb: CapturedInstagramReelItem[] = [];
+
+function parseSafeIsoTimestamp(raw: unknown): string {
+  const str = String(raw || '').trim();
+  if (!str) return new Date().toISOString();
+  const d = new Date(str);
+  if (Number.isNaN(d.getTime())) return new Date().toISOString();
+  return d.toISOString();
+}
 
 function parseAbbreviatedCount(raw: number | string | undefined): number {
   if (typeof raw === 'number' && Number.isFinite(raw)) {
@@ -107,7 +134,9 @@ function extractShortcode(input: CapturedInstagramReelInput, idx: number): strin
   const direct = String(input.shortcode || '').trim();
   if (direct && /^[A-Za-z0-9_-]{4,40}$/.test(direct)) return direct;
 
-  const urlStr = String(input.reelUrl || input.reel_url || input.url || '').trim();
+  const urlStr = String(
+    input.reelUrl || input.reel_url || input.url || input.link || input.permalink || ''
+  ).trim();
   const match = urlStr.match(/\/(?:reel|reels|p)\/([A-Za-z0-9_-]+)/i);
   if (match && match[1]) return match[1];
 
@@ -222,82 +251,139 @@ export class InstagramService {
     sourceQuery = 'General',
     capturedVia = 'antigravity_browser'
   ): Promise<CapturedInstagramReelItem[]> {
+    const res = await this.captureReelsBatchWithMeta(inputs, sourceQuery, capturedVia);
+    return res.reels;
+  }
+
+  async captureReelsBatchWithMeta(
+    inputs: CapturedInstagramReelInput[],
+    sourceQuery = 'General',
+    capturedVia = 'antigravity_browser'
+  ): Promise<{ reels: CapturedInstagramReelItem[]; persistedToSupabase: boolean; supabaseError?: string }> {
     const cleanQuery = String(sourceQuery || 'General').trim() || 'General';
     const cleanVia = String(capturedVia || 'antigravity_browser').trim() || 'antigravity_browser';
+
+    const validInputs = inputs
+      .map((raw, idx) => ({ raw, idx }))
+      .filter(({ raw }) => Boolean(raw && typeof raw === 'object'));
+
     const processed: CapturedInstagramReelItem[] = [];
+    const CONCURRENCY = 4;
 
-    for (let i = 0; i < inputs.length; i++) {
-      const raw = inputs[i];
-      if (!raw || typeof raw !== 'object') continue;
+    for (let start = 0; start < validInputs.length; start += CONCURRENCY) {
+      const chunk = validInputs.slice(start, start + CONCURRENCY);
+      const chunkItems = await Promise.all(
+        chunk.map(async ({ raw, idx }) => {
+          const shortcode = extractShortcode(raw, idx);
+          const rawUrl = String(
+            raw.reelUrl || raw.reel_url || raw.url || raw.link || raw.permalink || ''
+          ).trim();
+          const reelUrl =
+            rawUrl && /^https?:\/\//i.test(rawUrl)
+              ? rawUrl
+              : `https://www.instagram.com/reel/${encodeURIComponent(shortcode)}/`;
+          const authorHandle = normalizeHandle(
+            raw.authorHandle ||
+              raw.author_handle ||
+              raw.author ||
+              raw.handle ||
+              raw.username ||
+              raw.account ||
+              raw.ownerUsername
+          );
+          const caption = String(
+            raw.caption || raw.description || raw.text || raw.title || ''
+          ).trim();
+          const hashtags = extractHashtags(raw.hashtags, caption);
+          const audioName = String(
+            raw.audioName || raw.audio_name || raw.audio || 'Audio original'
+          ).trim();
+          const viewCount = parseAbbreviatedCount(
+            raw.viewCount ?? raw.view_count ?? raw.views ?? raw.viewsCount ?? raw.playCount ?? raw.plays
+          );
+          const likeCount = parseAbbreviatedCount(
+            raw.likeCount ?? raw.like_count ?? raw.likes ?? raw.likesCount
+          );
+          const commentCount = parseAbbreviatedCount(
+            raw.commentCount ?? raw.comment_count ?? raw.comments ?? raw.commentsCount
+          );
+          const frameImage = String(
+            raw.frameImageBase64 ||
+              raw.thumbnailDataUrl ||
+              raw.thumbnail_data_url ||
+              raw.imageBase64 ||
+              raw.thumbnailUrl ||
+              raw.thumbnail ||
+              raw.coverUrl ||
+              raw.image ||
+              ''
+          ).trim();
 
-      const shortcode = extractShortcode(raw, i);
-      const rawUrl = String(raw.reelUrl || raw.reel_url || raw.url || '').trim();
-      const reelUrl =
-        rawUrl && /^https?:\/\//i.test(rawUrl)
-          ? rawUrl
-          : `https://www.instagram.com/reel/${encodeURIComponent(shortcode)}/`;
-      const authorHandle = normalizeHandle(raw.authorHandle || raw.author_handle || raw.author);
-      const caption = String(raw.caption || '').trim();
-      const hashtags = extractHashtags(raw.hashtags, caption);
-      const audioName = String(raw.audioName || raw.audio_name || raw.audio || 'Audio original').trim();
-      const viewCount = parseAbbreviatedCount(raw.viewCount ?? raw.view_count ?? raw.views);
-      const likeCount = parseAbbreviatedCount(raw.likeCount ?? raw.like_count ?? raw.likes);
-      const commentCount = parseAbbreviatedCount(raw.commentCount ?? raw.comment_count ?? raw.comments);
-      const frameImage = String(
-        raw.frameImageBase64 || raw.thumbnailDataUrl || raw.thumbnail_data_url || ''
-      ).trim();
+          const vision = await this.geminiService.analyzeReelFirstFrame({
+            shortcode,
+            caption,
+            authorHandle,
+            frameImageBase64: frameImage || undefined,
+          });
 
-      const vision = await this.geminiService.analyzeReelFirstFrame({
-        shortcode,
-        caption,
-        authorHandle,
-        frameImageBase64: frameImage || undefined,
-      });
-
-      const item: CapturedInstagramReelItem = {
-        shortcode,
-        reel_url: reelUrl,
-        author_handle: authorHandle,
-        source_query: String(raw.sourceQuery || raw.source_query || cleanQuery).trim() || cleanQuery,
-        caption,
-        hashtags,
-        audio_name: audioName,
-        view_count: viewCount,
-        like_count: likeCount,
-        comment_count: commentCount,
-        thumbnail_data_url: frameImage ? frameImage.slice(0, 450_000) : undefined,
-        visual_hook_text: vision.visual_hook_text,
-        visual_style: vision.visual_style,
-        detected_angle: vision.detected_angle,
-        captured_via: cleanVia,
-        posted_at: raw.postedAt || raw.posted_at || new Date().toISOString(),
-        created_at: new Date().toISOString(),
-      };
-
-      processed.push(item);
+          const item: CapturedInstagramReelItem = {
+            shortcode,
+            reel_url: reelUrl,
+            author_handle: authorHandle,
+            source_query: String(raw.sourceQuery || raw.source_query || cleanQuery).trim() || cleanQuery,
+            caption,
+            hashtags,
+            audio_name: audioName,
+            view_count: viewCount,
+            like_count: likeCount,
+            comment_count: commentCount,
+            thumbnail_data_url: frameImage ? frameImage.slice(0, 450_000) : undefined,
+            visual_hook_text: vision.visual_hook_text,
+            visual_style: vision.visual_style,
+            detected_angle: vision.detected_angle,
+            captured_via: cleanVia,
+            posted_at: parseSafeIsoTimestamp(raw.postedAt || raw.posted_at),
+            created_at: new Date().toISOString(),
+          };
+          return item;
+        })
+      );
+      processed.push(...chunkItems);
     }
 
-    if (processed.length === 0) return [];
+    if (processed.length === 0) {
+      return { reels: [], persistedToSupabase: false };
+    }
 
+    // Deduplicar por shortcode para evitar error de Postgres ON CONFLICT DO UPDATE en el mismo batch
+    const dedupMap = new Map<string, CapturedInstagramReelItem>();
+    for (const item of processed) {
+      dedupMap.set(item.shortcode, item);
+    }
+    const deduped = Array.from(dedupMap.values());
+
+    let supabaseError: string | undefined;
     if (!isMock && supabase) {
       try {
         const { data, error } = await supabase
           .from('ig_captured_reels')
-          .upsert(processed, { onConflict: 'shortcode' })
+          .upsert(deduped, { onConflict: 'shortcode' })
           .select('*');
         if (!error && data && data.length > 0) {
           console.log(`✅ [InstagramService] ${data.length} Reels guardados en Supabase.`);
-          return data as CapturedInstagramReelItem[];
+          return { reels: data as CapturedInstagramReelItem[], persistedToSupabase: true };
         }
         if (error) {
+          supabaseError = error.message;
           console.warn('[InstagramService] Error guardando Reels en Supabase (usando memoria):', error.message);
         }
       } catch (err: any) {
+        supabaseError = err.message;
         console.warn('[InstagramService] Excepción guardando Reels en Supabase:', err.message);
       }
     }
 
-    for (const item of processed) {
+    for (const item of deduped) {
       const existingIdx = localIgReelsDb.findIndex((r) => r.shortcode === item.shortcode);
       if (existingIdx !== -1) {
         localIgReelsDb[existingIdx] = { ...localIgReelsDb[existingIdx], ...item };
@@ -306,13 +392,14 @@ export class InstagramService {
       }
     }
 
-    return processed;
+    return { reels: deduped, persistedToSupabase: false, supabaseError };
   }
 
   async getCapturedReels(filters?: { query?: string; author?: string }): Promise<CapturedInstagramReelItem[]> {
     const queryFilter = filters?.query?.trim().toLowerCase();
     const authorFilter = filters?.author?.trim().toLowerCase();
 
+    let supabaseRows: CapturedInstagramReelItem[] = [];
     if (!isMock && supabase) {
       try {
         let req = supabase
@@ -331,14 +418,14 @@ export class InstagramService {
 
         const { data, error } = await req;
         if (!error && Array.isArray(data)) {
-          return data as CapturedInstagramReelItem[];
+          supabaseRows = data as CapturedInstagramReelItem[];
         }
       } catch (err: any) {
         console.warn('[InstagramService] Error consultando Reels en Supabase:', err.message);
       }
     }
 
-    return localIgReelsDb.filter((r) => {
+    const localFiltered = localIgReelsDb.filter((r) => {
       if (queryFilter && !r.source_query.toLowerCase().includes(queryFilter) && !r.caption.toLowerCase().includes(queryFilter)) {
         return false;
       }
@@ -348,6 +435,16 @@ export class InstagramService {
       }
       return true;
     });
+
+    if (supabaseRows.length === 0) return localFiltered;
+    if (localFiltered.length === 0) return supabaseRows;
+
+    const merged = new Map<string, CapturedInstagramReelItem>();
+    supabaseRows.forEach((r) => merged.set(r.shortcode, r));
+    localFiltered.forEach((r) => {
+      if (!merged.has(r.shortcode)) merged.set(r.shortcode, r);
+    });
+    return Array.from(merged.values());
   }
 
   async deleteCapturedReel(shortcode: string): Promise<boolean> {

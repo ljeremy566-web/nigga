@@ -315,4 +315,53 @@ describe('Instagram Reels Capture (Antigravity Browser / CDP) + Independent Road
       await page.close();
     }
   });
+
+  test('Regression: Empty default #nicheInput/#igAccountInput and fenced/messy JSON import with duplicate shortcodes & invalid postedAt', async () => {
+    const page = await openAppPage(browser, server.baseUrl, { viewport: VIEWPORTS.DESKTOP });
+    try {
+      assert.equal(await page.getValue(SELECTORS.nicheInput), '');
+      assert.equal(await page.getValue(SELECTORS.igAccountInput), '');
+
+      await page.click('#tab-ig-reels');
+      await page.waitForSelector('#view-ig-reels', { visible: true });
+      await page.click('#btnToggleIgImport');
+      await page.waitForSelector('#igImportPanel', { visible: true });
+
+      const messyPastedJson = `Aquí tienes la captura:
+\`\`\`json
+{
+  "sourceQuery": "cosmetologia @ssabeaute",
+  "items": [
+    {
+      "link": "https://www.instagram.com/reel/FencedDup01/",
+      "username": "ssabeaute",
+      "description": "Rutina facial de limpieza profunda #cosmetologia",
+      "views": "18.4K",
+      "likes": "1.2K",
+      "postedAt": "hace 2 días",
+    },
+    {
+      "shortcode": "FencedDup01",
+      "handle": "@ssabeaute",
+      "text": "Rutina facial actualizada #skincare",
+      "viewsCount": "19K",
+    },
+  ],
+}
+\`\`\`
+Listo!`;
+
+      await page.fill('#igImportJsonInput', messyPastedJson);
+      await page.click('#btnSubmitIgImport');
+
+      await page.waitForSelector('.ig-reel-card[data-ig-shortcode="FencedDup01"]', { visible: true });
+      const cardText = await page.getText('.ig-reel-card[data-ig-shortcode="FencedDup01"]');
+      assert.match(cardText, /@ssabeaute/);
+      assert.match(cardText, /Rutina facial actualizada/);
+
+      page.assertNoRuntimeErrors('Regression fenced JSON & empty defaults');
+    } finally {
+      await page.close();
+    }
+  });
 });

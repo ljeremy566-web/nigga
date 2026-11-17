@@ -37,7 +37,7 @@ export class OracleOrchestratorService {
     // Cron: 0 0 1 * * (El 1 de cada mes a las 00:00)
     cron.schedule('0 0 1 * *', async () => {
       console.log('⏰ [Oracle Cron] Disparo automático mensual iniciado...');
-      await this.runAutonomousCycle('Inteligencia Artificial y Productividad', '@creatorshub');
+      await this.runAutonomousCycle('General', '@creatorshub');
     });
     console.log('📅 [Oracle Cron] Tarea mensual programada (Día 1 de cada mes).');
   }
@@ -46,7 +46,7 @@ export class OracleOrchestratorService {
    * Ejecuta el ciclo completo de investigación y generación de contenidos
    */
   async runAutonomousCycle(
-    niche = 'Inteligencia Artificial y Productividad',
+    niche = 'General',
     instagramAccount = '@creatorshub'
   ): Promise<OracleExecutionReport> {
     const execId = `oracle_${Date.now()}`;

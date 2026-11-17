@@ -131,7 +131,7 @@ export class YouTubeService {
     maxResults = 10,
     saveToDb = true
   ): Promise<YouTubeVideoItem[]> {
-    const cleanNiche = (niche || 'Inteligencia Artificial y Productividad').trim();
+    const cleanNiche = (niche || 'General').trim();
     const angleIndex = trendRotationCounter % TREND_QUERY_ANGLES.length;
     trendRotationCounter += 1;
 

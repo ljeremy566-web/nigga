@@ -12,7 +12,7 @@ router.get('/', async (req: Request, res: Response) => {
 
     // Si aún no hay items, autogenerar el predeterminado
     if (items.length === 0) {
-      items = await roadmapService.generate30DayRoadmap(niche || 'Inteligencia Artificial y Productividad');
+      items = await roadmapService.generate30DayRoadmap(niche || 'General');
     }
 
     return res.json({
@@ -30,7 +30,7 @@ router.get('/', async (req: Request, res: Response) => {
 router.post('/generate', async (req: Request, res: Response) => {
   try {
     const { niche } = req.body || {};
-    const targetNiche = niche || 'Inteligencia Artificial y Productividad';
+    const targetNiche = niche || 'General';
     const items = await roadmapService.generate30DayRoadmap(targetNiche);
 
     return res.json({

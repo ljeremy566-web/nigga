@@ -446,7 +446,8 @@ function resetIgFilters() {
 
 async function promptGenerateRoadmap(customNiche) {
   if (state.loading.generate) return;
-  const niche = (customNiche ?? dom.nicheInput?.value ?? DEFAULT_NICHE).trim() || DEFAULT_NICHE;
+  const raw = (customNiche ?? dom.nicheInput?.value ?? '').trim();
+  const niche = raw || 'General';
   const confirmed = await openConfirmDialog({
     title: 'Generar nuevo roadmap de 30 días',
     body: `Se generará una nueva planificación de 30 días para "${niche}" reemplazando el estado actual de ese nicho en el servidor.`,
@@ -454,7 +455,7 @@ async function promptGenerateRoadmap(customNiche) {
     cancelLabel: 'Cancelar',
   });
   if (!confirmed) return;
-  await executeGenerateRoadmap(niche);
+  await executeGenerateRoadmap(raw);
 }
 
 async function promptGenerateIgRoadmap(customNiche, customSourceQuery) {
@@ -487,11 +488,11 @@ async function promptGenerateIgRoadmap(customNiche, customSourceQuery) {
 
 async function promptOracleRun() {
   if (state.loading.oracle) return;
-  const niche = dom.nicheInput?.value.trim() || DEFAULT_NICHE;
-  const ig = dom.igAccountInput?.value.trim() || DEFAULT_IG_ACCOUNT;
+  const niche = dom.nicheInput?.value.trim() || 'General';
+  const ig = dom.igAccountInput?.value.trim() || '';
   const confirmed = await openConfirmDialog({
     title: 'Ejecutar ciclo del Oráculo IA',
-    body: `El Oráculo consultará tendencias reales de YouTube y generará 30 piezas con Gemini AI para "${niche}" (${ig}).`,
+    body: `El Oráculo consultará tendencias reales de YouTube y generará 30 piezas con Gemini AI para "${niche}"${ig ? ` (${ig})` : ''}.`,
     confirmLabel: 'Ejecutar Oráculo',
     cancelLabel: 'Cancelar',
   });
@@ -583,13 +584,13 @@ function bindEvents() {
 
   // ----- Roadmap Principal (YouTube + Oráculo) -----
   dom.btnLoadRoadmap?.addEventListener('click', () => {
-    fetchRoadmap(dom.nicheInput?.value.trim() || DEFAULT_NICHE);
+    fetchRoadmap(dom.nicheInput?.value.trim() || '');
   });
 
   dom.nicheInput?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      fetchRoadmap(dom.nicheInput.value.trim() || DEFAULT_NICHE);
+      fetchRoadmap(dom.nicheInput.value.trim() || '');
     }
   });
 
@@ -1272,7 +1273,7 @@ async function boot() {
     await switchTab(initialHashTab, { updateHash: false });
   }
 
-  const initialNiche = dom.nicheInput?.value.trim() || DEFAULT_NICHE;
+  const initialNiche = dom.nicheInput?.value.trim() || '';
   await Promise.allSettled([
     fetchRoadmap(initialNiche),
     fetchHealth(),

@@ -532,8 +532,8 @@ describe('Tier 1: Feature Coverage (F1–F14, 77 cases)', () => {
     test('T1-F4-01: Default command bar inputs & boot auto-hydration', async () => {
       const page = await openAppPage(browser, server.baseUrl);
       try {
-        assert.equal(await page.getValue(SELECTORS.nicheInput), DEFAULT_NICHE);
-        assert.equal(await page.getValue(SELECTORS.igAccountInput), DEFAULT_IG_ACCOUNT);
+        assert.equal(await page.getValue(SELECTORS.nicheInput), '');
+        assert.equal(await page.getValue(SELECTORS.igAccountInput), '');
         assert.equal(await page.isVisible(SELECTORS.roadmapLinearProgress), false);
         assert.equal(await page.count(SELECTORS.dayCard), 30);
         assert.equal(await page.isVisible(SELECTORS.roadmapSourceNotice), false);

@@ -50,9 +50,32 @@ router.post('/reels/capture', async (req: Request, res: Response) => {
     } else if (body && typeof body === 'object') {
       sourceQuery = body.sourceQuery || body.source_query || body.query || 'General';
       capturedVia = body.capturedVia || body.captured_via || 'antigravity_browser';
-      if (Array.isArray(body.reels)) {
-        reelsInput = body.reels;
-      } else if (body.shortcode || body.reelUrl || body.reel_url || body.url || body.caption) {
+      const arr =
+        (Array.isArray(body.reels) && body.reels) ||
+        (Array.isArray(body.items) && body.items) ||
+        (Array.isArray(body.posts) && body.posts) ||
+        (Array.isArray(body.data) && body.data) ||
+        (Array.isArray(body.results) && body.results) ||
+        null;
+
+      if (arr) {
+        reelsInput = arr;
+      } else if (
+        body.shortcode ||
+        body.reelUrl ||
+        body.reel_url ||
+        body.url ||
+        body.link ||
+        body.permalink ||
+        body.caption ||
+        body.description ||
+        body.text ||
+        body.authorHandle ||
+        body.author_handle ||
+        body.author ||
+        body.handle ||
+        body.username
+      ) {
         reelsInput = [body];
       }
     }
@@ -64,7 +87,7 @@ router.post('/reels/capture', async (req: Request, res: Response) => {
       });
     }
 
-    const saved = await instagramService.captureReelsBatch(
+    const result = await instagramService.captureReelsBatchWithMeta(
       reelsInput.slice(0, 30),
       sourceQuery,
       capturedVia
@@ -72,9 +95,11 @@ router.post('/reels/capture', async (req: Request, res: Response) => {
 
     return res.json({
       success: true,
-      count: saved.length,
+      count: result.reels.length,
       sourceQuery,
-      reels: saved,
+      persistedToSupabase: result.persistedToSupabase,
+      supabaseError: result.supabaseError,
+      reels: result.reels,
     });
   } catch (error: any) {
     return res.status(500).json({ success: false, error: error.message });

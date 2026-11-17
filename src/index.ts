@@ -18,7 +18,7 @@ const youtubeService = new YouTubeService();
 
 // Middlewares
 app.use(cors());
-app.use(express.json({ limit: '6mb' }));
+app.use(express.json({ limit: '25mb' }));
 
 // Archivos estáticos si existieran
 app.use(express.static(path.join(__dirname, '../public')));

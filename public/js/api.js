@@ -110,9 +110,9 @@ export async function fetchStoredVideosQuietly() {
 
 export async function fetchRoadmap(niche, options = {}) {
   state.loading.roadmap = true;
-  const targetNiche = (niche || state.niche || DEFAULT_NICHE).trim() || DEFAULT_NICHE;
+  const targetNiche = (niche !== undefined ? String(niche) : state.niche || '').trim();
   state.niche = targetNiche;
-  if (dom.nicheInput && dom.nicheInput.value.trim() !== targetNiche) {
+  if (dom.nicheInput && targetNiche && dom.nicheInput.value.trim() !== targetNiche) {
     dom.nicheInput.value = targetNiche;
   }
 
@@ -133,7 +133,7 @@ export async function fetchRoadmap(niche, options = {}) {
       throw new Error(data.error || `HTTP ${res.status}`);
     }
     state.roadmap = data.roadmap
-      .map((item) => normalizeRoadmapItem(item, targetNiche))
+      .map((item) => normalizeRoadmapItem(item, targetNiche || 'General'))
       .sort((a, b) => a.day_number - b.day_number);
     state.roadmapIsFallback = false;
     updateSourceNotice();
@@ -144,7 +144,7 @@ export async function fetchRoadmap(niche, options = {}) {
       renderInspectorNow(getSelectedRawItem());
     }
   } catch (err) {
-    state.roadmap = generateClientFallbackRoadmap(targetNiche);
+    state.roadmap = generateClientFallbackRoadmap(targetNiche || 'General');
     state.roadmapIsFallback = true;
     updateSourceNotice(
       `Sin conexión con el servidor (${err.message}): mostrando respaldo local temporal.`
@@ -166,9 +166,10 @@ export async function fetchRoadmap(niche, options = {}) {
 
 export async function executeGenerateRoadmap(customNiche) {
   if (state.loading.generate) return;
-  const niche = (customNiche ?? dom.nicheInput?.value ?? DEFAULT_NICHE).trim() || DEFAULT_NICHE;
-  if (dom.nicheInput) dom.nicheInput.value = niche;
-  state.niche = niche;
+  const rawNiche = (customNiche !== undefined ? String(customNiche) : dom.nicheInput?.value || '').trim();
+  const niche = rawNiche || 'General';
+  if (dom.nicheInput && customNiche && rawNiche) dom.nicheInput.value = rawNiche;
+  state.niche = rawNiche;
   state.loading.generate = true;
   setRoadmapLinearProgress(true);
   setButtonBusy(dom.btnGenerateRoadmap, true, 'Generando…');
@@ -208,11 +209,10 @@ export async function executeGenerateRoadmap(customNiche) {
 
 export async function executeOracleRun() {
   if (state.loading.oracle) return;
-  const niche = dom.nicheInput?.value.trim() || DEFAULT_NICHE;
-  const instagramAccount = dom.igAccountInput?.value.trim() || DEFAULT_IG_ACCOUNT;
-  if (dom.nicheInput) dom.nicheInput.value = niche;
-  if (dom.igAccountInput) dom.igAccountInput.value = instagramAccount;
-  state.niche = niche;
+  const rawNiche = dom.nicheInput?.value.trim() || '';
+  const niche = rawNiche || 'General';
+  const instagramAccount = dom.igAccountInput?.value.trim() || '';
+  state.niche = rawNiche;
   state.igAccount = instagramAccount;
   state.loading.oracle = true;
   setRoadmapLinearProgress(true);
@@ -416,28 +416,81 @@ export async function fetchIgReels(force = false) {
   }
 }
 
+function extractJsonFromPastedText(rawText) {
+  let text = String(rawText || '').trim();
+  if (!text) return null;
+
+  // Quitar cercos markdown ```json ... ``` o ``` ... ```
+  const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  if (fenceMatch && fenceMatch[1]) {
+    text = fenceMatch[1].trim();
+  }
+
+  const tryParse = (candidate) => {
+    try {
+      return JSON.parse(candidate);
+    } catch {
+      const noTrailingCommas = candidate.replace(/,\s*([}\]])/g, '$1');
+      try {
+        return JSON.parse(noTrailingCommas);
+      } catch {
+        return undefined;
+      }
+    }
+  };
+
+  const direct = tryParse(text);
+  if (direct !== undefined) return direct;
+
+  // Extraer el bloque JSON principal entre el primer [ o { y su cierre correspondiente
+  const firstBracket = text.search(/[\[{]/);
+  if (firstBracket === -1) return undefined;
+  const openChar = text[firstBracket];
+  const closeChar = openChar === '[' ? ']' : '}';
+  const lastBracket = text.lastIndexOf(closeChar);
+  if (lastBracket <= firstBracket) return undefined;
+
+  return tryParse(text.slice(firstBracket, lastBracket + 1));
+}
+
 export async function captureIgReelsPayload(rawJsonText, sourceQueryOverride) {
   if (state.loading.igCapture) return false;
-  let parsed;
-  try {
-    parsed = JSON.parse(String(rawJsonText || '').trim());
-  } catch {
+  if (!String(rawJsonText || '').trim()) {
+    showToast('Pega el JSON capturado antes de guardar.', 'error');
+    return false;
+  }
+
+  const parsed = extractJsonFromPastedText(rawJsonText);
+  if (parsed === undefined || parsed === null) {
     showToast('El JSON pegado no es válido. Verifica la estructura.', 'error');
     return false;
   }
 
   let body;
   if (Array.isArray(parsed)) {
+    if (parsed.length === 0) {
+      showToast('El arreglo JSON está vacío. Agrega al menos 1 Reel.', 'error');
+      return false;
+    }
     body = {
       sourceQuery: sourceQueryOverride || 'Antigravity Browser',
       capturedVia: 'manual_json',
       reels: parsed,
     };
   } else if (parsed && typeof parsed === 'object') {
+    const nestedArray =
+      (Array.isArray(parsed.reels) && parsed.reels) ||
+      (Array.isArray(parsed.items) && parsed.items) ||
+      (Array.isArray(parsed.posts) && parsed.posts) ||
+      (Array.isArray(parsed.data) && parsed.data) ||
+      (Array.isArray(parsed.results) && parsed.results) ||
+      null;
+
     body = {
       ...parsed,
-      sourceQuery: sourceQueryOverride || parsed.sourceQuery || parsed.query || 'Antigravity Browser',
-      capturedVia: parsed.capturedVia || 'antigravity_browser',
+      ...(nestedArray ? { reels: nestedArray } : {}),
+      sourceQuery: sourceQueryOverride || parsed.sourceQuery || parsed.source_query || parsed.query || 'Antigravity Browser',
+      capturedVia: parsed.capturedVia || parsed.captured_via || 'antigravity_browser',
     };
   } else {
     showToast('Formato JSON no compatible.', 'error');
@@ -452,12 +505,35 @@ export async function captureIgReelsPayload(rawJsonText, sourceQueryOverride) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
-    const data = await res.json();
+    const rawResp = await res.text();
+    let data = {};
+    try {
+      data = rawResp ? JSON.parse(rawResp) : {};
+    } catch {
+      throw new Error(`Respuesta inválida del servidor (HTTP ${res.status})`);
+    }
     if (!res.ok || !data.success) {
       throw new Error(data.error || `HTTP ${res.status}`);
     }
+    if (Array.isArray(data.reels) && data.reels.length > 0) {
+      const incoming = data.reels.map(normalizeIgReelItem);
+      const byCode = new Map(state.igReels.map((r) => [r.shortcode, r]));
+      incoming.forEach((r) => byCode.set(r.shortcode, r));
+      state.igReels = Array.from(byCode.values());
+      state.igReelsStats = {
+        count: state.igReels.length,
+        lastCapturedAt: state.igReels[0]?.createdAt || new Date().toISOString(),
+      };
+      renderIgReelsGrid();
+      renderHealthAndOracleBadges();
+      renderOracleView();
+    }
     await fetchIgReels(true);
-    showToast(`${data.count} Reels capturados y analizados con éxito.`, 'success');
+    if (data.supabaseError) {
+      showToast(`${data.count} Reels guardados solo en memoria (Supabase: ${data.supabaseError}).`, 'error');
+    } else {
+      showToast(`${data.count} Reels capturados y analizados con éxito.`, 'success');
+    }
     return true;
   } catch (err) {
     showToast(`Error capturando Reels: ${err.message}`, 'error');

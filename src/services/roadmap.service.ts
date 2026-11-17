@@ -28,7 +28,7 @@ export class RoadmapService {
   private instagramService = new InstagramService();
   private geminiService = new GeminiService();
 
-  async generate30DayRoadmap(niche: string = 'Inteligencia Artificial y Productividad'): Promise<RoadmapDayItem[]> {
+  async generate30DayRoadmap(niche: string = 'General'): Promise<RoadmapDayItem[]> {
     console.log(`🤖 [ContentAI] Iniciando análisis de tendencias frescas en YouTube para nicho: "${niche}"...`);
 
     // 1. Obtener tendencias frescas y métricas reales del nicho

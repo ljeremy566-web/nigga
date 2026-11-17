@@ -380,6 +380,9 @@ Devuelve EXCLUSIVAMENTE un arreglo JSON válido (sin markdown ni texto fuera del
     }
 
     const rawData = input.frameImageBase64.trim();
+    if (/^https?:\/\//i.test(rawData)) {
+      return heuristicFallback();
+    }
     const match = rawData.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
     const mimeType = match ? match[1] : 'image/jpeg';
     const base64Bytes = match ? match[2] : rawData;
@@ -400,7 +403,7 @@ Extrae y devuelve EXCLUSIVAMENTE un objeto JSON válido con estas 3 claves exact
 }
 `;
 
-    const modelsToTry = ['gemini-2.5-flash', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite'];
+    const modelsToTry = ['gemini-2.5-flash', 'gemini-3.1-flash-lite'];
     for (const modelName of modelsToTry) {
       try {
         const response = await this.ai.models.generateContent({
@@ -417,7 +420,7 @@ Extrae y devuelve EXCLUSIVAMENTE un objeto JSON válido con estas 3 claves exact
           config: {
             responseMimeType: 'application/json',
             temperature: 0.2,
-            httpOptions: { timeout: 25000 },
+            httpOptions: { timeout: 12000 },
           },
         });
         const cleanJson = (response.text || '').replace(/```json/g, '').replace(/```/g, '').trim();

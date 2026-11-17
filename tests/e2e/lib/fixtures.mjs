@@ -172,8 +172,8 @@ export const WEEK_LABELS = [
 ];
 
 export const CSV_HEADERS_COUNT = 14;
-export const DEFAULT_NICHE = 'Inteligencia Artificial y Productividad';
-export const DEFAULT_IG_ACCOUNT = '@creatorshub';
+export const DEFAULT_NICHE = 'General';
+export const DEFAULT_IG_ACCOUNT = '';
 
 export const M3_TOKENS = {
   colors: [

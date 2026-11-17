@@ -8,7 +8,7 @@ const oracleService = new OracleOrchestratorService();
 router.post('/orchestrate', async (req: Request, res: Response) => {
   try {
     const { niche, instagramAccount } = req.body || {};
-    const targetNiche = niche || 'Inteligencia Artificial y Productividad';
+    const targetNiche = niche || 'General';
     const targetAccount = instagramAccount || '@creatorshub';
 
     const report = await oracleService.runAutonomousCycle(targetNiche, targetAccount);
@@ -26,7 +26,7 @@ router.post('/orchestrate', async (req: Request, res: Response) => {
 router.post('/run-now', async (req: Request, res: Response) => {
   try {
     const { niche, instagramAccount } = req.body || {};
-    const targetNiche = niche || 'Inteligencia Artificial y Productividad';
+    const targetNiche = niche || 'General';
     const targetAccount = instagramAccount || '@creatorshub';
 
     const report = await oracleService.runAutonomousCycle(targetNiche, targetAccount);
