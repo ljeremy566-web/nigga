@@ -359,7 +359,48 @@ Listo!`;
       assert.match(cardText, /@ssabeaute/);
       assert.match(cardText, /Rutina facial actualizada/);
 
-      page.assertNoRuntimeErrors('Regression fenced JSON & empty defaults');
+      // Verify generating a second niche and reloading without ?niche= still yields strictly 30 days (not 60/300)
+      await fetch(`${server.baseUrl}/api/roadmap/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ niche: 'Nicho Reload A' }),
+      });
+      await fetch(`${server.baseUrl}/api/roadmap/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ niche: 'Nicho Reload B' }),
+      });
+      const reloadRes = await (await fetch(`${server.baseUrl}/api/roadmap`)).json();
+      assert.equal(reloadRes.count, 30);
+      assert.equal(reloadRes.roadmap.length, 30);
+      assert.equal(reloadRes.roadmap[0].niche, 'Nicho Reload B');
+
+      // Also verify in Chromium UI: switch back to Roadmap, change Day 1 status, reload page, and confirm 30 cards + saved status
+      await page.click('#tab-roadmap');
+      await page.waitForSelector('#view-roadmap', { visible: true });
+      await page.fill(SELECTORS.nicheInput, 'Nicho Reload UI');
+      await page.click(SELECTORS.btnGenerateRoadmap);
+      await page.waitForSelector(SELECTORS.m3ConfirmDialog, { visible: true });
+      await page.click(SELECTORS.m3ConfirmAccept);
+      await page.waitForFunction(
+        () =>
+          document.querySelectorAll('.day-card').length === 30 &&
+          (document.querySelector('#toastContainer')?.textContent || '').includes('Nicho Reload UI')
+      );
+      await page.selectOption('#inspectorStatusSelect', 'grabado');
+      await page.waitForFunction(
+        () =>
+          (document.querySelector('[data-card-status="1"]')?.textContent || '').trim() === 'Grabado' &&
+          (document.querySelector('#toastContainer')?.textContent || '').includes('grabado')
+      );
+
+      await page.reload();
+      await page.waitForFunction(() => document.querySelectorAll('.day-card').length === 30);
+      assert.equal(await page.getValue(SELECTORS.nicheInput), '');
+      assert.equal(await page.count(SELECTORS.dayCard), 30);
+      assert.equal(await page.getText('[data-card-status="1"]'), 'Grabado');
+
+      page.assertNoRuntimeErrors('Regression fenced JSON, empty defaults & reload persistence');
     } finally {
       await page.close();
     }

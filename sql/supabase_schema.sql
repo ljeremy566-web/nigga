@@ -62,6 +62,11 @@ CREATE TABLE IF NOT EXISTS public.instagram_content_roadmap (
     updated_at TIMESTAMPTZ DEFAULT now() NOT NULL
 );
 
+ALTER TABLE public.instagram_content_roadmap ADD COLUMN IF NOT EXISTS niche TEXT DEFAULT 'General';
+ALTER TABLE public.instagram_content_roadmap ADD COLUMN IF NOT EXISTS reference_video_id TEXT;
+ALTER TABLE public.instagram_content_roadmap ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now() NOT NULL;
+ALTER TABLE public.instagram_content_roadmap ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now() NOT NULL;
+
 -- Índices para optimizar consultas frecuentes
 CREATE INDEX IF NOT EXISTS idx_youtube_videos_query ON public.youtube_videos(search_query);
 CREATE INDEX IF NOT EXISTS idx_youtube_videos_views ON public.youtube_videos(view_count DESC);
@@ -73,20 +78,6 @@ CREATE INDEX IF NOT EXISTS idx_roadmap_status ON public.instagram_content_roadma
 ALTER TABLE public.youtube_search_history ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.youtube_videos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.instagram_content_roadmap ENABLE ROW LEVEL SECURITY;
-
--- Políticas de acceso permisivo para la API (Anon / Service Role)
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'youtube_search_history' AND policyname = 'Permitir todo a anon y authenticated') THEN
-        CREATE POLICY "Permitir todo a anon y authenticated" ON public.youtube_search_history FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
-    END IF;
-    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'youtube_videos' AND policyname = 'Permitir todo a anon y authenticated') THEN
-        CREATE POLICY "Permitir todo a anon y authenticated" ON public.youtube_videos FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
-    END IF;
-    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'instagram_content_roadmap' AND policyname = 'Permitir todo a anon y authenticated') THEN
-        CREATE POLICY "Permitir todo a anon y authenticated" ON public.instagram_content_roadmap FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
-    END IF;
-END $$;
 
 -- =========================================================================
 -- 4. Tablas Independientes para Captura de Reels de Instagram y Roadmap IG
@@ -145,13 +136,30 @@ CREATE INDEX IF NOT EXISTS idx_ig_roadmap_status ON public.ig_content_roadmap(st
 ALTER TABLE public.ig_captured_reels ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.ig_content_roadmap ENABLE ROW LEVEL SECURITY;
 
+GRANT USAGE ON SCHEMA public TO anon, authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.youtube_search_history TO anon, authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.youtube_videos TO anon, authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.instagram_content_roadmap TO anon, authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.ig_captured_reels TO anon, authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.ig_content_roadmap TO anon, authenticated;
+
 DO $$
+DECLARE
+    tbl TEXT;
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'ig_captured_reels' AND policyname = 'Permitir todo a anon y authenticated') THEN
-        CREATE POLICY "Permitir todo a anon y authenticated" ON public.ig_captured_reels FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
-    END IF;
-    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'ig_content_roadmap' AND policyname = 'Permitir todo a anon y authenticated') THEN
-        CREATE POLICY "Permitir todo a anon y authenticated" ON public.ig_content_roadmap FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
-    END IF;
+    FOREACH tbl IN ARRAY ARRAY[
+        'youtube_search_history',
+        'youtube_videos',
+        'instagram_content_roadmap',
+        'ig_captured_reels',
+        'ig_content_roadmap'
+    ]
+    LOOP
+        EXECUTE format('DROP POLICY IF EXISTS "Permitir todo a anon y authenticated" ON public.%I', tbl);
+        EXECUTE format(
+            'CREATE POLICY "Permitir todo a anon y authenticated" ON public.%I FOR ALL TO anon, authenticated USING (true) WITH CHECK (true)',
+            tbl
+        );
+    END LOOP;
 END $$;
 

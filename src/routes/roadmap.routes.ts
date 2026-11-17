@@ -31,24 +31,26 @@ router.post('/generate', async (req: Request, res: Response) => {
   try {
     const { niche } = req.body || {};
     const targetNiche = niche || 'General';
-    const items = await roadmapService.generate30DayRoadmap(targetNiche);
+    const result = await roadmapService.generate30DayRoadmapWithMeta(targetNiche);
 
     return res.json({
       success: true,
       message: `Roadmap de 30 días generado exitosamente para "${targetNiche}"`,
-      count: items.length,
-      roadmap: items,
+      count: result.items.length,
+      persistedToSupabase: result.persistedToSupabase,
+      supabaseError: result.supabaseError,
+      roadmap: result.items,
     });
   } catch (error: any) {
     return res.status(500).json({ success: false, error: error.message });
   }
 });
 
-// PATCH /api/roadmap/:id/status { status: "grabado" }
+// PATCH /api/roadmap/:id/status { status: "grabado", niche?: "...", dayNumber?: 1 }
 router.patch('/:id/status', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { status } = req.body || {};
+    const { status, niche, dayNumber } = req.body || {};
 
     const validStatuses = ['pendiente', 'grabado', 'editado', 'publicado'];
     if (!validStatuses.includes(status)) {
@@ -58,12 +60,24 @@ router.patch('/:id/status', async (req: Request, res: Response) => {
       });
     }
 
-    const updated = await roadmapService.updateItemStatus(id, status);
-    if (!updated) {
+    const result = await roadmapService.updateItemStatusWithMeta(id, status, { niche, dayNumber });
+    if (result.supabaseError) {
+      return res.status(500).json({
+        success: false,
+        persistedToSupabase: false,
+        supabaseError: result.supabaseError,
+        error: `Supabase bloqueó la actualización: ${result.supabaseError}`,
+      });
+    }
+    if (!result.updated) {
       return res.status(404).json({ success: false, error: 'Elemento no encontrado' });
     }
 
-    return res.json({ success: true, message: `Estado actualizado a "${status}"` });
+    return res.json({
+      success: true,
+      persistedToSupabase: result.persistedToSupabase,
+      message: `Estado actualizado a "${status}"`,
+    });
   } catch (error: any) {
     return res.status(500).json({ success: false, error: error.message });
   }

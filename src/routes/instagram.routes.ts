@@ -143,10 +143,11 @@ router.post('/roadmap/generate', async (req: Request, res: Response) => {
   try {
     const { niche, sourceQuery, shortcodes } = req.body || {};
     const targetNiche = String(niche || 'Cosmetología y Estética Facial').trim();
-    const { items, reelsUsed } = await igRoadmapService.generate30DayIgRoadmap(targetNiche, {
-      sourceQuery,
-      shortcodes: Array.isArray(shortcodes) ? shortcodes : undefined,
-    });
+    const { items, reelsUsed, persistedToSupabase, supabaseError } =
+      await igRoadmapService.generate30DayIgRoadmap(targetNiche, {
+        sourceQuery,
+        shortcodes: Array.isArray(shortcodes) ? shortcodes : undefined,
+      });
 
     return res.json({
       success: true,
@@ -156,6 +157,8 @@ router.post('/roadmap/generate', async (req: Request, res: Response) => {
           : `Roadmap IG de 30 días generado para "${targetNiche}" (sin Reels capturados aún; usando estructura base IG)`,
       count: items.length,
       reelsUsed,
+      persistedToSupabase,
+      supabaseError,
       roadmap: items,
     });
   } catch (error: any) {
@@ -167,7 +170,7 @@ router.post('/roadmap/generate', async (req: Request, res: Response) => {
 router.patch('/roadmap/:id/status', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { status, niche } = req.body || {};
+    const { status, niche, dayNumber } = req.body || {};
     const validStatuses = ['pendiente', 'grabado', 'editado', 'publicado'];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({
@@ -176,11 +179,23 @@ router.patch('/roadmap/:id/status', async (req: Request, res: Response) => {
       });
     }
 
-    const updated = await igRoadmapService.updateIgItemStatus(id, status, niche);
-    if (!updated) {
+    const result = await igRoadmapService.updateIgItemStatusWithMeta(id, status, { niche, dayNumber });
+    if (result.supabaseError) {
+      return res.status(500).json({
+        success: false,
+        persistedToSupabase: false,
+        supabaseError: result.supabaseError,
+        error: `Supabase bloqueó la actualización IG: ${result.supabaseError}`,
+      });
+    }
+    if (!result.updated) {
       return res.status(404).json({ success: false, error: 'Elemento del Roadmap IG no encontrado' });
     }
-    return res.json({ success: true, message: `Estado IG actualizado a "${status}"` });
+    return res.json({
+      success: true,
+      persistedToSupabase: result.persistedToSupabase,
+      message: `Estado IG actualizado a "${status}"`,
+    });
   } catch (error: any) {
     return res.status(500).json({ success: false, error: error.message });
   }

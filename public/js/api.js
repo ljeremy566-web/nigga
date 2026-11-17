@@ -112,7 +112,7 @@ export async function fetchRoadmap(niche, options = {}) {
   state.loading.roadmap = true;
   const targetNiche = (niche !== undefined ? String(niche) : state.niche || '').trim();
   state.niche = targetNiche;
-  if (dom.nicheInput && targetNiche && dom.nicheInput.value.trim() !== targetNiche) {
+  if (!options.preserveInput && dom.nicheInput && targetNiche && dom.nicheInput.value.trim() !== targetNiche) {
     dom.nicheInput.value = targetNiche;
   }
 
@@ -185,11 +185,19 @@ export async function executeGenerateRoadmap(customNiche) {
       throw new Error(data.error || `HTTP ${res.status}`);
     }
 
-    await fetchRoadmap(niche, { silent: true });
-    if (state.roadmap.length === 0 && Array.isArray(data.roadmap)) {
+    if (data.supabaseError && Array.isArray(data.roadmap) && data.roadmap.length > 0) {
       state.roadmap = data.roadmap
         .map((item) => normalizeRoadmapItem(item, niche))
         .sort((a, b) => a.day_number - b.day_number);
+      state.roadmapIsFallback = false;
+      updateSourceNotice();
+    } else {
+      await fetchRoadmap(niche, { silent: true, preserveInput: !rawNiche });
+      if (state.roadmap.length === 0 && Array.isArray(data.roadmap)) {
+        state.roadmap = data.roadmap
+          .map((item) => normalizeRoadmapItem(item, niche))
+          .sort((a, b) => a.day_number - b.day_number);
+      }
     }
 
     state.selectedDay = state.roadmap[0]?.day_number || 1;
@@ -197,7 +205,11 @@ export async function executeGenerateRoadmap(customNiche) {
     renderProgressAndCounters();
     await transitionSwap(dom.roadmapList, () => renderRoadmapList());
     await transitionSwap(dom.dayInspectorContent, () => renderInspectorNow(getSelectedRawItem()));
-    showToast(`Roadmap de 30 días generado para "${niche}".`, 'success');
+    if (data.supabaseError) {
+      showToast(`Roadmap generado solo en memoria (Supabase: ${data.supabaseError}).`, 'error');
+    } else {
+      showToast(`Roadmap de 30 días generado para "${niche}".`, 'success');
+    }
   } catch (err) {
     showToast(`Error generando roadmap: ${err.message}`, 'error');
   } finally {
@@ -237,7 +249,7 @@ export async function executeOracleRun() {
 
     state.oracleError = false;
     await Promise.allSettled([
-      fetchRoadmap(niche, { silent: true }),
+      fetchRoadmap(niche, { silent: true, preserveInput: !rawNiche }),
       fetchStoredVideosQuietly(),
       fetchHealth(),
     ]);
@@ -285,11 +297,15 @@ export async function handleStatusChange(dayNumber, newStatus) {
     const res = await fetch(`/api/roadmap/${targetId}/status`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: newStatus }),
+      body: JSON.stringify({
+        status: newStatus,
+        niche: item.niche,
+        dayNumber: item.day_number,
+      }),
     });
     const payload = await res.json().catch(() => ({}));
-    if (!res.ok || payload.success === false) {
-      throw new Error(payload.error || `HTTP ${res.status}`);
+    if (!res.ok || payload.success === false || payload.supabaseError) {
+      throw new Error(payload.supabaseError || payload.error || `HTTP ${res.status}`);
     }
     showToast(`Día ${padDay(dayNumber)} marcado como "${newStatus}".`, 'success');
   } catch (err) {
@@ -644,11 +660,17 @@ export async function executeGenerateIgRoadmap(customNiche, customSourceQuery) {
     }
 
     await fetchIgReels(true);
-    await fetchIgRoadmap(niche, { silent: true });
-    if (state.igRoadmap.length === 0 && Array.isArray(data.roadmap)) {
+    if (data.supabaseError && Array.isArray(data.roadmap) && data.roadmap.length > 0) {
       state.igRoadmap = data.roadmap
         .map((item) => normalizeRoadmapItem(item, niche))
         .sort((a, b) => a.day_number - b.day_number);
+    } else {
+      await fetchIgRoadmap(niche, { silent: true });
+      if (state.igRoadmap.length === 0 && Array.isArray(data.roadmap)) {
+        state.igRoadmap = data.roadmap
+          .map((item) => normalizeRoadmapItem(item, niche))
+          .sort((a, b) => a.day_number - b.day_number);
+      }
     }
 
     state.igSelectedDay = state.igRoadmap[0]?.day_number || 1;
@@ -661,7 +683,11 @@ export async function executeGenerateIgRoadmap(customNiche, customSourceQuery) {
     renderIgProgressAndCounters();
     await transitionSwap(dom.igRoadmapList, () => renderIgRoadmapList());
     await transitionSwap(dom.igDayInspectorContent, () => renderIgInspectorNow(getSelectedRawIgItem()));
-    showToast(data.message || `Roadmap IG de 30 días generado para "${niche}".`, 'success');
+    if (data.supabaseError) {
+      showToast(`Roadmap IG generado solo en memoria (Supabase: ${data.supabaseError}).`, 'error');
+    } else {
+      showToast(data.message || `Roadmap IG de 30 días generado para "${niche}".`, 'success');
+    }
   } catch (err) {
     showToast(`Error generando Roadmap IG: ${err.message}`, 'error');
   } finally {
@@ -693,11 +719,15 @@ export async function handleIgStatusChange(dayNumber, newStatus) {
     const res = await fetch(`/api/instagram/roadmap/${targetId}/status`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: newStatus, niche: item.niche }),
+      body: JSON.stringify({
+        status: newStatus,
+        niche: item.niche,
+        dayNumber: item.day_number,
+      }),
     });
     const payload = await res.json().catch(() => ({}));
-    if (!res.ok || payload.success === false) {
-      throw new Error(payload.error || `HTTP ${res.status}`);
+    if (!res.ok || payload.success === false || payload.supabaseError) {
+      throw new Error(payload.supabaseError || payload.error || `HTTP ${res.status}`);
     }
     showToast(`Día IG ${padDay(dayNumber)} marcado como "${newStatus}".`, 'success');
   } catch (err) {
