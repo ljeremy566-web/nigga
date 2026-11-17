@@ -117,7 +117,7 @@ router.get('/roadmap', async (req: Request, res: Response) => {
 router.post('/roadmap/generate', async (req: Request, res: Response) => {
   try {
     const { niche, sourceQuery, shortcodes } = req.body || {};
-    const targetNiche = String(niche || 'Inteligencia Artificial y Productividad').trim();
+    const targetNiche = String(niche || 'Cosmetología y Estética Facial').trim();
     const { items, reelsUsed } = await igRoadmapService.generate30DayIgRoadmap(targetNiche, {
       sourceQuery,
       shortcodes: Array.isArray(shortcodes) ? shortcodes : undefined,

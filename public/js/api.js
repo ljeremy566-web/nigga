@@ -12,6 +12,7 @@ import {
 } from './state.js';
 import {
   DEFAULT_IG_ACCOUNT,
+  DEFAULT_IG_NICHE,
   DEFAULT_NICHE,
   STATUS_OPTIONS,
   padDay,
@@ -488,7 +489,7 @@ export async function deleteIgReelByShortcode(shortcode) {
 
 export async function fetchIgRoadmap(niche, options = {}) {
   state.loading.igRoadmap = true;
-  const targetNiche = (niche || state.igNiche || DEFAULT_NICHE).trim() || DEFAULT_NICHE;
+  const targetNiche = (niche || state.igNiche || DEFAULT_IG_NICHE).trim() || DEFAULT_IG_NICHE;
   state.igNiche = targetNiche;
   if (dom.igRoadmapNicheInput && dom.igRoadmapNicheInput.value.trim() !== targetNiche) {
     dom.igRoadmapNicheInput.value = targetNiche;
@@ -543,7 +544,7 @@ export async function fetchIgRoadmap(niche, options = {}) {
 
 export async function executeGenerateIgRoadmap(customNiche, customSourceQuery) {
   if (state.loading.igGenerate) return;
-  const niche = (customNiche ?? dom.igRoadmapNicheInput?.value ?? DEFAULT_NICHE).trim() || DEFAULT_NICHE;
+  const niche = (customNiche ?? dom.igRoadmapNicheInput?.value ?? DEFAULT_IG_NICHE).trim() || DEFAULT_IG_NICHE;
   const rawSource = customSourceQuery ?? dom.igRoadmapSourceSelect?.value ?? state.igSourceQueryFilter ?? 'all';
   const sourceQuery = rawSource && rawSource !== 'all' ? rawSource : undefined;
 

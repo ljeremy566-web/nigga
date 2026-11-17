@@ -1,5 +1,7 @@
 export const DEFAULT_NICHE = 'Inteligencia Artificial y Productividad';
 export const DEFAULT_IG_ACCOUNT = '@creatorshub';
+export const DEFAULT_IG_NICHE = 'Cosmetología y Estética Facial';
+export const DEFAULT_IG_MAIN_ACCOUNT = '@ssabeaute';
 export const DRAFT_STORAGE_KEY = 'content_studio_drafts_v1';
 export const IG_DRAFT_STORAGE_KEY = 'content_studio_ig_drafts_v1';
 export const THEME_STORAGE_KEY = 'content_studio_theme_v1';

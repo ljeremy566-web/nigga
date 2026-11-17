@@ -8,10 +8,10 @@
  *   1) Iniciar sesión una sola vez en perfil local:
  *      node scripts/ig-capture-cdp.mjs --login
  *
- *   2) Capturar Reels por búsqueda, hashtag o cuenta:
- *      node scripts/ig-capture-cdp.mjs --query="ia productividad" --limit=8 --target=http://localhost:3000
- *      node scripts/ig-capture-cdp.mjs --tag="inteligenciaartificial" --limit=6
- *      node scripts/ig-capture-cdp.mjs --account="@creatorshub" --limit=8
+ *   2) Capturar Reels e imágenes/consejos de cosmetología por búsqueda, hashtag o cuenta:
+ *      node scripts/ig-capture-cdp.mjs --query="cosmetologia facial skincare" --limit=10 --target=http://localhost:3000
+ *      node scripts/ig-capture-cdp.mjs --tag="cosmetologia" --limit=8
+ *      node scripts/ig-capture-cdp.mjs --account="@ssabeaute" --limit=8
  */
 
 import { spawn } from 'node:child_process';
@@ -228,11 +228,12 @@ async function run() {
       `(() => {
         const seen = new Set();
         const out = [];
-        for (const a of document.querySelectorAll('a[href*="/reel/"]')) {
-          const m = (a.getAttribute('href') || '').match(/\\/reel\\/([A-Za-z0-9_-]+)/);
-          if (m && !seen.has(m[1])) {
-            seen.add(m[1]);
-            out.push({ shortcode: m[1], reelUrl: 'https://www.instagram.com/reel/' + m[1] + '/' });
+        for (const a of document.querySelectorAll('a[href*="/reel/"], a[href*="/p/"]')) {
+          const href = a.getAttribute('href') || '';
+          const m = href.match(/\\/(reel|p)\\/([A-Za-z0-9_-]+)/);
+          if (m && !seen.has(m[2])) {
+            seen.add(m[2]);
+            out.push({ shortcode: m[2], reelUrl: 'https://www.instagram.com/' + m[1] + '/' + m[2] + '/' });
           }
         }
         return out.slice(0, ${opts.limit});
@@ -240,11 +241,11 @@ async function run() {
     );
 
     if (!Array.isArray(reelLinks) || reelLinks.length === 0) {
-      console.warn('⚠️ No se detectaron enlaces /reel/ en la vista actual.');
+      console.warn('⚠️ No se detectaron enlaces /reel/ o /p/ en la vista actual.');
       return;
     }
 
-    console.log(`🔎 Encontrados ${reelLinks.length} Reels. Capturando metadatos y primer frame...`);
+    console.log(`🔎 Encontradas ${reelLinks.length} publicaciones. Capturando metadatos y primer frame/imagen...`);
     const captured = [];
 
     for (const item of reelLinks) {
@@ -264,7 +265,9 @@ async function run() {
           const root = document.querySelector('main') || document.body;
           const vid = root.querySelector('video');
           if (vid) vid.pause();
-          const rect = vid ? vid.getBoundingClientRect() : null;
+          const img = root.querySelector('article img[src*="instagram"], article img[src*="fbcdn"]');
+          const mediaEl = vid || img;
+          const rect = mediaEl ? mediaEl.getBoundingClientRect() : null;
           const authorLink = root.querySelector('header a[href^="/"], a[role="link"][href^="/"]');
           const authorRaw = authorLink ? (authorLink.getAttribute('href') || authorLink.textContent || '') : '';
           const authorHandle = authorRaw.replace(/\\//g, '').trim();

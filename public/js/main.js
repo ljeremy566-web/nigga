@@ -15,6 +15,8 @@ import {
 } from './state.js';
 import {
   DEFAULT_IG_ACCOUNT,
+  DEFAULT_IG_MAIN_ACCOUNT,
+  DEFAULT_IG_NICHE,
   DEFAULT_NICHE,
   csvEscape,
   getDesktopMediaQuery,
@@ -458,8 +460,8 @@ async function promptGenerateRoadmap(customNiche) {
 async function promptGenerateIgRoadmap(customNiche, customSourceQuery) {
   if (state.loading.igGenerate) return;
   const niche =
-    (customNiche ?? dom.igRoadmapNicheInput?.value ?? state.igNiche ?? DEFAULT_NICHE).trim() ||
-    DEFAULT_NICHE;
+    (customNiche ?? dom.igRoadmapNicheInput?.value ?? state.igNiche ?? DEFAULT_IG_NICHE).trim() ||
+    DEFAULT_IG_NICHE;
   const sourceQuery =
     customSourceQuery ??
     (dom.igRoadmapSourceSelect?.value && dom.igRoadmapSourceSelect.value !== 'all'
@@ -901,7 +903,8 @@ function bindEvents() {
   dom.btnCopyBrowserPrompt?.addEventListener('click', () => {
     const promptText = buildAntigravityBrowserPrompt(
       window.location.origin,
-      dom.igRoadmapNicheInput?.value.trim() || state.igNiche
+      dom.igRoadmapNicheInput?.value.trim() || state.igNiche,
+      state.igMainAccount || DEFAULT_IG_MAIN_ACCOUNT
     );
     copyText(promptText, 'Prompt para Antigravity Browser');
   });
@@ -966,13 +969,13 @@ function bindEvents() {
 
   // ----- Roadmap IG Independiente -----
   dom.btnLoadIgRoadmap?.addEventListener('click', () => {
-    fetchIgRoadmap(dom.igRoadmapNicheInput?.value.trim() || DEFAULT_NICHE);
+    fetchIgRoadmap(dom.igRoadmapNicheInput?.value.trim() || DEFAULT_IG_NICHE);
   });
 
   dom.igRoadmapNicheInput?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      fetchIgRoadmap(dom.igRoadmapNicheInput.value.trim() || DEFAULT_NICHE);
+      fetchIgRoadmap(dom.igRoadmapNicheInput.value.trim() || DEFAULT_IG_NICHE);
     }
   });
 

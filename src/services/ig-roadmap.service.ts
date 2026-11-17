@@ -30,10 +30,10 @@ export class IgRoadmapService {
   private geminiService = new GeminiService();
 
   async generate30DayIgRoadmap(
-    niche = 'Inteligencia Artificial y Productividad',
+    niche = 'Cosmetología y Estética Facial',
     options: { sourceQuery?: string; shortcodes?: string[] } = {}
   ): Promise<{ items: IgRoadmapDayItem[]; reelsUsed: number }> {
-    const cleanNiche = String(niche || 'Inteligencia Artificial y Productividad').trim();
+    const cleanNiche = String(niche || 'Cosmetología y Estética Facial').trim();
     const cleanQuery = options.sourceQuery?.trim();
 
     let reels: CapturedInstagramReelItem[] = await this.instagramService.getCapturedReels(

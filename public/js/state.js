@@ -1,5 +1,7 @@
 import {
   DEFAULT_IG_ACCOUNT,
+  DEFAULT_IG_MAIN_ACCOUNT,
+  DEFAULT_IG_NICHE,
   DEFAULT_NICHE,
   DRAFT_STORAGE_KEY,
   IG_DRAFT_STORAGE_KEY,
@@ -52,7 +54,8 @@ export const state = {
   igReelsTabLoaded: false,
   igReelsStats: { count: 0, lastCapturedAt: null },
   igReelsFilters: { query: '', author: 'all' },
-  igNiche: DEFAULT_NICHE,
+  igNiche: DEFAULT_IG_NICHE,
+  igMainAccount: DEFAULT_IG_MAIN_ACCOUNT,
   igSourceQueryFilter: 'all',
   igRoadmap: [],
   igSelectedDay: 1,

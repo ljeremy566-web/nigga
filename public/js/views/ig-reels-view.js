@@ -150,12 +150,14 @@ export function renderIgReelsGrid() {
     .join('');
 }
 
-export function buildAntigravityBrowserPrompt(baseUrl, nicheHint) {
+export function buildAntigravityBrowserPrompt(baseUrl, nicheHint, mainAccount = '@ssabeaute') {
   const targetUrl = `${baseUrl || window.location.origin}/api/instagram/reels/capture`;
-  const topic = nicheHint || 'Inteligencia Artificial y Productividad';
+  const topic = (nicheHint || '').trim() || 'Cosmetología y Estética Facial';
+  const account = (mainAccount || '').trim() || '@ssabeaute';
   return `Usa el skill ig-reels-browser-capture en Antigravity Browser:
 1. Abre https://www.instagram.com/ y confirma sesión activa (si pide login o verificación, detente y avísame).
-2. Busca Reels sobre "${topic}" (por keyword, hashtag o cuenta referente) y abre los 8 mejores Reels.
-3. Para cada Reel extrae: shortcode, reelUrl, authorHandle, caption, audioName, viewCount, likeCount, commentCount y captura el primer frame JPEG en frameImageBase64.
-4. Envía el JSON por POST a ${targetUrl} con { "sourceQuery": "${topic}", "capturedVia": "antigravity_browser", "reels": [...] } (o devuélveme el JSON para importarlo en IG Reels).`;
+2. Revisa primero la cuenta principal de cosmetología ${account} (/${account.replace(/^@/, '')}/) para entender su estilo, servicios y tono actual.
+3. Busca otros IGs referentes y tendencias de "${topic}" (cuentas de cosmetólogas, estética facial, skincare, limpiezas faciales, #cosmetologia, #cuidadodelapiel) y abre entre 8 y 12 publicaciones destacadas (Reels, imágenes/carruseles y consejos prácticos) que sirvan de inspiración para que ${account} genere 1 mes (30 días) de contenido.
+4. Para cada pieza extrae: shortcode, reelUrl, authorHandle, caption, audioName, viewCount, likeCount, commentCount y captura el primer frame o portada JPEG en frameImageBase64.
+5. Envía el JSON por POST a ${targetUrl} con { "sourceQuery": "${topic}", "capturedVia": "antigravity_browser", "reels": [...] } (o devuélveme el JSON para importarlo en IG Reels).`;
 }
