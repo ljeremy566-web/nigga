@@ -31,9 +31,15 @@ fi
 
 echo "✅ Node versión: $(node -v) | NPM versión: $(npm -v)"
 
-# 3. Directorio de la aplicación
-APP_DIR="/home/$USER/youtube-supabase-api"
-mkdir -p "$APP_DIR"
+# 3. Directorio de la aplicación (detecta si se ejecuta desde el repo clonado o usa ruta clásica)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+if [ -f "$REPO_ROOT/package.json" ]; then
+    APP_DIR="$REPO_ROOT"
+else
+    APP_DIR="/home/$USER/youtube-supabase-api"
+    mkdir -p "$APP_DIR"
+fi
 
 echo "📂 Directorio de la app: $APP_DIR"
 
@@ -47,7 +53,7 @@ fi
 
 # 5. Configurar systemd daemon para que corra 24/7
 echo "⚙️ Configurando servicio Systemd..."
-sudo cp oracle/youtube-instagram-oracle.service /etc/systemd/system/youtube-instagram-oracle.service
+sudo cp "$APP_DIR/oracle/youtube-instagram-oracle.service" /etc/systemd/system/youtube-instagram-oracle.service
 sudo sed -i "s|User=ubuntu|User=$USER|g" /etc/systemd/system/youtube-instagram-oracle.service
 sudo sed -i "s|/home/ubuntu/youtube-supabase-api|$APP_DIR|g" /etc/systemd/system/youtube-instagram-oracle.service
 
@@ -55,7 +61,10 @@ sudo systemctl daemon-reload
 sudo systemctl enable youtube-instagram-oracle.service
 sudo systemctl restart youtube-instagram-oracle.service
 
-# 6. Abrir puerto 3000 en iptables (Oracle Ubuntu bloquea puertos extras por defecto)
+# 6. Abrir puerto 3000 en iptables / ufw (Oracle Ubuntu bloquea puertos extras por defecto)
+if command -v ufw &> /dev/null && sudo ufw status 2>/dev/null | grep -q "Status: active"; then
+    sudo ufw allow 3000/tcp || true
+fi
 if command -v iptables &> /dev/null; then
     if ! sudo iptables -C INPUT -p tcp --dport 3000 -j ACCEPT 2>/dev/null; then
         sudo iptables -I INPUT 1 -p tcp --dport 3000 -j ACCEPT || true
